@@ -1,4 +1,4 @@
-.login-page {
+﻿.login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -86,28 +86,6 @@
   background: #ffffff;
 }
 
-.login-input--error {
-  border-color: #d14343;
-  background: #fff5f5;
-}
-
-.login-field__error {
-  font-size: 12px;
-  color: #d14343;
-}
-
-.login-error {
-  width: 350px;
-  margin-top: 12px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: #fff1f1;
-  border: 1px solid #f3b5b5;
-  color: #b42318;
-  font-size: 13px;
-  text-align: center;
-}
-
 .login-field input::placeholder {
   color: #c0c4cc;
 }
@@ -125,11 +103,6 @@
 
 .login-button:hover {
   filter: brightness(0.95);
-}
-
-.login-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
 }
 
 .login-register {

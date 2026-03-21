@@ -1,6 +1,6 @@
 ﻿import type { ReactNode } from 'react'
-import type { Role } from '../context/AuthContext'
-import { useAuth } from '../context/AuthContext'
+import type { Role } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/AuthContext'
 import ForbiddenPage from './ForbiddenPage'
 
 type RequireRoleProps = {

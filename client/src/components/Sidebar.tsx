@@ -1,5 +1,5 @@
-import { NavLink } from 'react-router-dom'
-import type { Role, User } from '../context/AuthContext'
+﻿import { NavLink } from 'react-router-dom'
+import type { Role, User } from '../contexts/AuthContext'
 import './Sidebar.css'
 
 type NavItem = {

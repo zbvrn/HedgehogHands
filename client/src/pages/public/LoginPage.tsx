@@ -1,134 +1,88 @@
-﻿import { useEffect, useState, type FormEvent } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ApiError } from '../../api/client'
-import { useAuth } from '../../context/AuthContext'
-import type { Role } from '../../context/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
+import type { Role } from '../../contexts/AuthContext'
 import './LoginPage.css'
 
-type FieldErrors = Record<string, string[]>
-
-type FormValues = {
-  email: string
-  password: string
-}
-
-const ROLE_REDIRECTS: Record<Role, string> = {
-  Parent: '/tickets',
-  Helper: '/queue/new',
-  Admin: '/admin/categories',
-}
-
-function normalizeErrors(errors?: FieldErrors) {
-  if (!errors) return {}
-  return Object.fromEntries(
-    Object.entries(errors).map(([key, value]) => [key.toLowerCase(), value]),
-  )
-}
+const roles: Role[] = ['Parent', 'Helper', 'Admin']
 
 function LoginPage() {
-  const { login, isAuthenticated, role } = useAuth()
+  const { login } = useAuth()
   const navigate = useNavigate()
-  const [formValues, setFormValues] = useState<FormValues>({
-    email: '',
-    password: '',
-  })
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
-  const [formError, setFormError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [email, setEmail] = useState('alex@example.com')
+  const [password, setPassword] = useState('')
+  const [role, setRole] = useState<Role>('Parent')
 
-  useEffect(() => {
-    if (isAuthenticated && role) {
-      navigate(ROLE_REDIRECTS[role], { replace: true })
+  const displayName = useMemo(() => {
+    const namePart = email.split('@')[0]?.trim()
+    if (!namePart) {
+      return 'Гость'
     }
-  }, [isAuthenticated, role, navigate])
+    return namePart.charAt(0).toUpperCase() + namePart.slice(1)
+  }, [email])
 
-  const handleChange = (field: keyof FormValues, value: string) => {
-    const errorKey = field.toLowerCase()
-    setFormValues((prev) => ({ ...prev, [field]: value }))
-    if (fieldErrors[errorKey]) {
-      setFieldErrors((prev) => {
-        const next = { ...prev }
-        delete next[errorKey]
-        return next
-      })
+  const userId = useMemo(() => {
+    if (!email) {
+      return 'u-guest'
     }
-  }
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault()
-    setFormError(null)
-    setFieldErrors({})
-    setIsSubmitting(true)
-
-    try {
-      await login(formValues.email, formValues.password)
-    } catch (err) {
-      if (err instanceof ApiError) {
-        const normalized = normalizeErrors(err.fieldErrors)
-        setFieldErrors(normalized)
-        if (Object.keys(normalized).length === 0) {
-          setFormError(err.message)
-        } else {
-          setFormError('Проверьте поля формы.')
-        }
-      } else {
-        setFormError('Ошибка сети. Попробуйте еще раз.')
-      }
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const emailError = fieldErrors.email?.[0]
-  const passwordError = fieldErrors.password?.[0]
+    return `u-${email.toLowerCase().replace(/[^a-z0-9]/g, '')}`
+  }, [email])
 
   return (
     <div className="login-page">
       <div className="login-card">
         <div className="login-card__logo">
           <div className="login-card__logo-image" aria-hidden="true">
-            <span>Р›РѕРіРѕ</span>
+            <span>Лого</span>
           </div>
         </div>
 
         <div className="login-card__heading">
-          <h1>Р•Р¶РѕРІС‹Рµ СЂСѓРєРё</h1>
+          <h1>Ежовые руки</h1>
         </div>
 
-        <div className="login-card__subtitle">Р’С…РѕРґ РІ СЃРёСЃС‚РµРјСѓ</div>
+        <div className="login-card__subtitle">Вход в систему</div>
 
-        {formError && <div className="login-error">{formError}</div>}
-
-        <form className="login-form" onSubmit={handleSubmit}>
+        <form
+          className="login-form"
+          onSubmit={(event) => {
+            event.preventDefault()
+            login('demo-token', { id: userId, displayName }, role)
+            navigate('/')
+          }}
+        >
           <label className="login-field">
             <input
               type="email"
-              value={formValues.email}
-              onChange={(event) => handleChange('email', event.target.value)}
-              placeholder="Р’РІРµРґРёС‚Рµ email"
-              className={emailError ? 'login-input login-input--error' : 'login-input'}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Введите email"
             />
-            {emailError && <span className="login-field__error">{emailError}</span>}
           </label>
           <label className="login-field">
             <input
               type="password"
-              value={formValues.password}
-              onChange={(event) => handleChange('password', event.target.value)}
-              placeholder="Р’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ"
-              className={
-                passwordError ? 'login-input login-input--error' : 'login-input'
-              }
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Введите пароль"
             />
-            {passwordError && <span className="login-field__error">{passwordError}</span>}
           </label>
-          <button type="submit" className="login-button" disabled={isSubmitting}>
-            {isSubmitting ? 'Р’С…РѕРґ...' : 'Р’РѕР№С‚Рё'}
+          <label className="login-field">
+            <select value={role} onChange={(event) => setRole(event.target.value as Role)}>
+              {roles.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="submit" className="login-button">
+            Войти
           </button>
         </form>
 
         <Link to="/register" className="login-register">
-          Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊСЃСЏ
+          Зарегистрироваться
         </Link>
       </div>
     </div>
@@ -136,4 +90,3 @@ function LoginPage() {
 }
 
 export default LoginPage
-
