@@ -1,0 +1,26 @@
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  text-align: left;
+  background: #f8f9fb;
+}
+
+.app-content {
+  flex: 1;
+  padding: 24px 32px;
+  background: #ffffff;
+}
+
+@media (max-width: 960px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
