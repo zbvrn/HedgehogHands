@@ -1,34 +1,18 @@
-﻿import { useMemo, useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
-import type { Role } from '../../contexts/AuthContext'
+import { useAuth } from '../../context/AuthContext'
+import { ApiRequestError } from '../../api/http'
 import './LoginPage.css'
 
-const roles: Role[] = ['Parent', 'Helper', 'Admin']
-
 function RegisterPage() {
-  const { login } = useAuth()
+  const { register } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('alex@example.com')
-  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [role, setRole] = useState<Role>('Parent')
-
-  const displayName = useMemo(() => {
-    const namePart = email.split('@')[0]?.trim()
-    if (!namePart) {
-      return 'Гость'
-    }
-    return namePart.charAt(0).toUpperCase() + namePart.slice(1)
-  }, [email])
-
-  const userId = useMemo(() => {
-    if (!email) {
-      return 'u-guest'
-    }
-    return `u-${email.toLowerCase().replace(/[^a-z0-9]/g, '')}`
-  }, [email])
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   return (
     <div className="login-page">
@@ -47,10 +31,28 @@ function RegisterPage() {
 
         <form
           className="login-form"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault()
-            login('demo-token', { id: userId, displayName }, role)
-            navigate('/')
+            setValidationError(null)
+
+            if (password !== confirmPassword) {
+              setValidationError('Пароли не совпадают')
+              return
+            }
+
+            setIsSubmitting(true)
+            try {
+              await register(email, password, name)
+              navigate('/')
+            } catch (err) {
+              if (err instanceof ApiRequestError && err.status === 400) {
+                setValidationError(err.message)
+              } else {
+                alert(err instanceof Error ? err.message : 'Ошибка регистрации')
+              }
+            } finally {
+              setIsSubmitting(false)
+            }
           }}
         >
           <label className="login-field">
@@ -63,10 +65,10 @@ function RegisterPage() {
           </label>
           <label className="login-field">
             <input
-              type="tel"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="Введите номер телефона"
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Введите имя"
             />
           </label>
           <label className="login-field">
@@ -85,16 +87,8 @@ function RegisterPage() {
               placeholder="Подтвердите пароль"
             />
           </label>
-          <label className="login-field">
-            <select value={role} onChange={(event) => setRole(event.target.value as Role)}>
-              {roles.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="submit" className="login-button">
+          {validationError && <div className="login-error">{validationError}</div>}
+          <button type="submit" className="login-button" disabled={isSubmitting}>
             Зарегистрироваться
           </button>
         </form>

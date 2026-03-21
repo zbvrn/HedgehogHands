@@ -1,32 +1,16 @@
-﻿import { useMemo, useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
-import type { Role } from '../../contexts/AuthContext'
+import { useAuth } from '../../context/AuthContext'
+import { ApiRequestError } from '../../api/http'
 import './LoginPage.css'
-
-const roles: Role[] = ['Parent', 'Helper', 'Admin']
 
 function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState('alex@example.com')
+  const [email, setEmail] = useState('parent@example.com')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<Role>('Parent')
-
-  const displayName = useMemo(() => {
-    const namePart = email.split('@')[0]?.trim()
-    if (!namePart) {
-      return 'Гость'
-    }
-    return namePart.charAt(0).toUpperCase() + namePart.slice(1)
-  }, [email])
-
-  const userId = useMemo(() => {
-    if (!email) {
-      return 'u-guest'
-    }
-    return `u-${email.toLowerCase().replace(/[^a-z0-9]/g, '')}`
-  }, [email])
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   return (
     <div className="login-page">
@@ -45,10 +29,22 @@ function LoginPage() {
 
         <form
           className="login-form"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault()
-            login('demo-token', { id: userId, displayName }, role)
-            navigate('/')
+            setValidationError(null)
+            setIsSubmitting(true)
+            try {
+              await login(email, password)
+              navigate('/')
+            } catch (err) {
+              if (err instanceof ApiRequestError && err.status === 400) {
+                setValidationError(err.message)
+              } else {
+                alert(err instanceof Error ? err.message : 'Ошибка входа')
+              }
+            } finally {
+              setIsSubmitting(false)
+            }
           }}
         >
           <label className="login-field">
@@ -67,16 +63,8 @@ function LoginPage() {
               placeholder="Введите пароль"
             />
           </label>
-          <label className="login-field">
-            <select value={role} onChange={(event) => setRole(event.target.value as Role)}>
-              {roles.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="submit" className="login-button">
+          {validationError && <div className="login-error">{validationError}</div>}
+          <button type="submit" className="login-button" disabled={isSubmitting}>
             Войти
           </button>
         </form>

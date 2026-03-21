@@ -1,6 +1,6 @@
 ﻿import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../context/AuthContext'
 
 const TOKEN_STORAGE_KEY = 'token'
 

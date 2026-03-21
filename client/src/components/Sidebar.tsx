@@ -1,5 +1,5 @@
 ﻿import { NavLink } from 'react-router-dom'
-import type { Role, User } from '../contexts/AuthContext'
+import type { Role, User } from '../context/AuthContext'
 import './Sidebar.css'
 
 type NavItem = {
@@ -14,21 +14,21 @@ type SidebarProps = {
 }
 
 const navItemsByRole: Record<Role, NavItem[]> = {
-  Parent: [
+  parent: [
     { label: 'Моя семья', to: '/parent/family' },
     { label: 'Поиск помощника', to: '/parent/helper-search' },
     { label: 'История поиска', to: '/parent/search-history' },
     { label: 'Избранное', to: '/parent/favorites' },
     { label: 'Заявки', to: '/parent/requests' },
   ],
-  Helper: [
+  helper: [
     { label: 'Мой профиль', to: '/helper/profile' },
     { label: 'Мои предложения', to: '/helper/offers' },
     { label: 'Мои объявления', to: '/helper/ads' },
     { label: 'Заявки', to: '/helper/requests' },
     { label: 'Статистика', to: '/helper/stats' },
   ],
-  Admin: [
+  admin: [
     { label: 'Специалисты', to: '/admin/specialists' },
     { label: 'Родители', to: '/admin/parents' },
     { label: 'Заявки', to: '/admin/requests' },
@@ -38,9 +38,9 @@ const navItemsByRole: Record<Role, NavItem[]> = {
 }
 
 const roleLabels: Record<Role, string> = {
-  Parent: 'родитель',
-  Helper: 'помощник',
-  Admin: 'администратор',
+  parent: 'родитель',
+  helper: 'помощник',
+  admin: 'администратор',
 }
 
 function getInitials(name: string) {
@@ -53,7 +53,7 @@ function getInitials(name: string) {
 
 function Sidebar({ user, role, onLogout }: SidebarProps) {
   const items = role ? navItemsByRole[role] ?? [] : []
-  const displayName = user?.displayName ?? 'Гость'
+  const displayName = user?.name ?? 'Гость'
   const roleLabel = role ? roleLabels[role] : 'без роли'
 
   return (

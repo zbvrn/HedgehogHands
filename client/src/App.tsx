@@ -30,7 +30,7 @@ function App() {
         <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
           <Route index element={<HomePage />} />
 
-          <Route element={<RequireRole allowedRoles={['Parent']}><Outlet /></RequireRole>}>
+          <Route element={<RequireRole allowedRoles={['parent']}><Outlet /></RequireRole>}>
             <Route
               path="/parent/family"
               element={<PlaceholderPage />}
@@ -55,11 +55,11 @@ function App() {
             <Route path="/tickets/new" element={<CreateTicketPage />} />
           </Route>
 
-          <Route element={<RequireRole allowedRoles={['Parent', 'Helper']}><Outlet /></RequireRole>}>
+          <Route element={<RequireRole allowedRoles={['parent', 'helper']}><Outlet /></RequireRole>}>
             <Route path="/tickets/:id" element={<TicketDetailPage />} />
           </Route>
 
-          <Route element={<RequireRole allowedRoles={['Helper']}><Outlet /></RequireRole>}>
+          <Route element={<RequireRole allowedRoles={['helper']}><Outlet /></RequireRole>}>
             <Route
               path="/helper/profile"
               element={<PlaceholderPage />}
@@ -85,7 +85,7 @@ function App() {
             <Route path="/queue/resolved" element={<QueueResolvedPage />} />
           </Route>
 
-          <Route element={<RequireRole allowedRoles={['Admin']}><Outlet /></RequireRole>}>
+          <Route element={<RequireRole allowedRoles={['admin']}><Outlet /></RequireRole>}>
             <Route
               path="/admin/documents"
               element={<PlaceholderPage />}
