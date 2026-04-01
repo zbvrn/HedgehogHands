@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, #f7f5fb 0%, #e9e4f2 45%, #d9d0e6 100%);
+  background: radial-gradient(circle at center, #d9c7f2 0%, #efe7fb 40%, #ffffff 75%);
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
@@ -26,15 +26,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 16px 0 8px;
+  padding: 16px 0 2px;
   box-sizing: border-box;
 }
 
 .login-card__logo-image {
-  width: 113px;
-  height: 83px;
+  width: 88px;
+  height: 88px;
   border-radius: 12px;
-  background: #b7c7dc;
+  background: #ffffff;
   display: grid;
   place-items: center;
   color: #173d61;
@@ -42,12 +42,21 @@
   font-size: 12px;
 }
 
+.login-card__logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 .login-card__heading h1 {
   margin: 4px 0 0;
-  font-size: 24px;
-  line-height: 36px;
+  font-size: 16px;
+  line-height: 1.1;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.88);
+  color: #173d61;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0;
   text-align: center;
 }
 
@@ -57,6 +66,7 @@
   line-height: 22px;
   color: #999999;
   text-align: center;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .login-form {
@@ -66,6 +76,7 @@
   align-items: stretch;
   gap: 16px;
   padding: 20px 0 16px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .login-field {
@@ -86,6 +97,17 @@
   background: #ffffff;
 }
 
+.login-field input:-webkit-autofill,
+.login-field input:-webkit-autofill:hover,
+.login-field input:-webkit-autofill:focus,
+.login-field select:-webkit-autofill,
+.login-field select:-webkit-autofill:hover,
+.login-field select:-webkit-autofill:focus {
+  box-shadow: 0 0 0 1000px #eef2f7 inset;
+  -webkit-text-fill-color: rgba(0, 0, 0, 0.88);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 .login-field input::placeholder {
   color: #c0c4cc;
 }
@@ -97,6 +119,7 @@
   background: #8ba2c3;
   color: #ffffff;
   font-weight: 600;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   cursor: pointer;
   transition: filter 0.2s ease;
 }
@@ -111,6 +134,7 @@
   font-size: 12px;
   color: #8ba2c3;
   text-decoration: none;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .login-register:hover {

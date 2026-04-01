@@ -12,8 +12,9 @@ import TicketDetailPage from './pages/TicketDetailPage'
 import QueueNewPage from './pages/helper/QueueNewPage'
 import QueueAssignedPage from './pages/helper/QueueAssignedPage'
 import QueueResolvedPage from './pages/helper/QueueResolvedPage'
-import AdminCategoriesPage from './pages/admin/AdminCategoriesPage'
-import AdminUsersPage from './pages/admin/AdminUsersPage'
+import ChildrenPage from './pages/parent/ChildrenPage'
+import HelperReviewsPage from './pages/helper/HelperReviewsPage'
+import AdminHelpersPage from './pages/admin/AdminHelpersPage'
 import PlaceholderPage from './pages/PlaceholderPage'
 
 function HomePage() {
@@ -32,19 +33,11 @@ function App() {
 
           <Route element={<RequireRole allowedRoles={['parent']}><Outlet /></RequireRole>}>
             <Route
-              path="/parent/family"
-              element={<PlaceholderPage />}
+              path="/parent/children"
+              element={<ChildrenPage />}
             />
             <Route
               path="/parent/helper-search"
-              element={<PlaceholderPage />}
-            />
-            <Route
-              path="/parent/search-history"
-              element={<PlaceholderPage />}
-            />
-            <Route
-              path="/parent/favorites"
               element={<PlaceholderPage />}
             />
             <Route
@@ -61,12 +54,8 @@ function App() {
 
           <Route element={<RequireRole allowedRoles={['helper']}><Outlet /></RequireRole>}>
             <Route
-              path="/helper/profile"
-              element={<PlaceholderPage />}
-            />
-            <Route
-              path="/helper/offers"
-              element={<PlaceholderPage />}
+              path="/helper/reviews"
+              element={<HelperReviewsPage />}
             />
             <Route
               path="/helper/ads"
@@ -76,10 +65,6 @@ function App() {
               path="/helper/requests"
               element={<PlaceholderPage />}
             />
-            <Route
-              path="/helper/stats"
-              element={<PlaceholderPage />}
-            />
             <Route path="/queue/new" element={<QueueNewPage />} />
             <Route path="/queue/assigned" element={<QueueAssignedPage />} />
             <Route path="/queue/resolved" element={<QueueResolvedPage />} />
@@ -87,12 +72,8 @@ function App() {
 
           <Route element={<RequireRole allowedRoles={['admin']}><Outlet /></RequireRole>}>
             <Route
-              path="/admin/documents"
-              element={<PlaceholderPage />}
-            />
-            <Route
-              path="/admin/specialists"
-              element={<PlaceholderPage />}
+              path="/admin/helpers"
+              element={<AdminHelpersPage />}
             />
             <Route
               path="/admin/parents"
@@ -102,16 +83,6 @@ function App() {
               path="/admin/requests"
               element={<PlaceholderPage />}
             />
-            <Route
-              path="/admin/analytics"
-              element={<PlaceholderPage />}
-            />
-            <Route
-              path="/admin/promotion"
-              element={<PlaceholderPage />}
-            />
-            <Route path="/admin/categories" element={<AdminCategoriesPage />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
           </Route>
         </Route>
 

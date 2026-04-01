@@ -2,6 +2,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { ApiRequestError } from '../../api/http'
+import logo from '../../assets/Logo.png'
 import './LoginPage.css'
 
 function RegisterPage() {
@@ -19,7 +20,7 @@ function RegisterPage() {
       <div className="login-card">
         <div className="login-card__logo">
           <div className="login-card__logo-image" aria-hidden="true">
-            <span>Лого</span>
+            <img src={logo} alt="Ежовые руки" className="login-card__logo-img" />
           </div>
         </div>
 

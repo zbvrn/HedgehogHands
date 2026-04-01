@@ -1,10 +1,23 @@
-﻿import { NavLink } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import {
+  FileTextOutlined,
+  ProfileOutlined,
+  SearchOutlined,
+  SolutionOutlined,
+  StarOutlined,
+  TeamOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
+import { NavLink } from 'react-router-dom'
 import type { Role, User } from '../context/AuthContext'
+import avatar from '../assets/Avatar.png'
+import logo from '../assets/Logo.png'
 import './Sidebar.css'
 
 type NavItem = {
   label: string
   to: string
+  icon: ReactNode
 }
 
 type SidebarProps = {
@@ -15,56 +28,46 @@ type SidebarProps = {
 
 const navItemsByRole: Record<Role, NavItem[]> = {
   parent: [
-    { label: 'Моя семья', to: '/parent/family' },
-    { label: 'Поиск помощника', to: '/parent/helper-search' },
-    { label: 'История поиска', to: '/parent/search-history' },
-    { label: 'Избранное', to: '/parent/favorites' },
-    { label: 'Заявки', to: '/parent/requests' },
+    { label: 'Дети', to: '/parent/children', icon: <TeamOutlined /> },
+    {
+      label: 'Поиск помощника',
+      to: '/parent/helper-search',
+      icon: <SearchOutlined />,
+    },
+    { label: 'Заявки', to: '/parent/requests', icon: <FileTextOutlined /> },
   ],
   helper: [
-    { label: 'Мой профиль', to: '/helper/profile' },
-    { label: 'Мои предложения', to: '/helper/offers' },
-    { label: 'Мои объявления', to: '/helper/ads' },
-    { label: 'Заявки', to: '/helper/requests' },
-    { label: 'Статистика', to: '/helper/stats' },
+    { label: 'Мои объявления', to: '/helper/ads', icon: <ProfileOutlined /> },
+    { label: 'Заявки', to: '/helper/requests', icon: <FileTextOutlined /> },
+    { label: 'Отзывы', to: '/helper/reviews', icon: <StarOutlined /> },
   ],
   admin: [
-    { label: 'Специалисты', to: '/admin/specialists' },
-    { label: 'Родители', to: '/admin/parents' },
-    { label: 'Заявки', to: '/admin/requests' },
-    { label: 'Аналитика', to: '/admin/analytics' },
-    { label: 'Продвижение', to: '/admin/promotion' },
+    { label: 'Родители', to: '/admin/parents', icon: <UserOutlined /> },
+    { label: 'Помощники', to: '/admin/helpers', icon: <SolutionOutlined /> },
+    { label: 'Заявки', to: '/admin/requests', icon: <FileTextOutlined /> },
   ],
 }
 
 const roleLabels: Record<Role, string> = {
-  parent: 'родитель',
-  helper: 'помощник',
-  admin: 'администратор',
-}
-
-function getInitials(name: string) {
-  const parts = name.trim().split(' ')
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase()
-  }
-  return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+  parent: 'Родитель',
+  helper: 'Помощник',
+  admin: 'Администратор',
 }
 
 function Sidebar({ user, role, onLogout }: SidebarProps) {
   const items = role ? navItemsByRole[role] ?? [] : []
   const displayName = user?.name ?? 'Гость'
-  const roleLabel = role ? roleLabels[role] : 'без роли'
+  const roleLabel = role ? roleLabels[role] : 'Без роли'
 
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
         <div className="sidebar__logo" aria-hidden="true">
-          HH
+          <img src={logo} alt="Ежовые руки" className="sidebar__logo-image" />
         </div>
         <div className="sidebar__title">
-          Hedgehog Hands
-          <span className="sidebar__subtitle">care platform</span>
+          Ежовые руки
+          <span className="sidebar__subtitle">Помогаем бережно</span>
         </div>
       </div>
 
@@ -77,7 +80,9 @@ function Sidebar({ user, role, onLogout }: SidebarProps) {
               isActive ? 'sidebar__link sidebar__link--active' : 'sidebar__link'
             }
           >
-            <span className="sidebar__link-icon" aria-hidden="true" />
+            <span className="sidebar__link-icon" aria-hidden="true">
+              {item.icon}
+            </span>
             <span className="sidebar__link-text">{item.label}</span>
           </NavLink>
         ))}
@@ -86,7 +91,7 @@ function Sidebar({ user, role, onLogout }: SidebarProps) {
       <div className="sidebar__profile">
         <div className="sidebar__user">
           <div className="sidebar__avatar" aria-hidden="true">
-            {getInitials(displayName)}
+            <img src={avatar} alt="" className="sidebar__avatar-image" />
           </div>
           <div>
             <div className="sidebar__name">{displayName}</div>

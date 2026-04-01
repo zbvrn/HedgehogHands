@@ -1,9 +1,10 @@
-﻿import { Result } from 'antd'
+import { Result } from 'antd'
+import './PageNotFound.css'
 
 function PageNotFound() {
   return (
-    <div style={{ padding: 24 }}>
-      <Result status="404" title="404" subTitle="Page not found" />
+    <div className="page-not-found">
+      <Result status="404" title="404" subTitle="Страница не найдена" />
     </div>
   )
 }
