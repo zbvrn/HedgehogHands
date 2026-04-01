@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
 
 async function ensureDatabaseExists() {
   const host = process.env.DB_HOST;
@@ -82,6 +83,7 @@ async function bootstrap() {
       },
     }),
   );
+  app.useGlobalFilters(new ProblemDetailsFilter());
   await app.listen(process.env.PORT ?? 3000);
 }
 

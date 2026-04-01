@@ -79,6 +79,14 @@
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
+.login-form .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.login-form .ant-form-item-explain {
+  font-size: 12px;
+}
+
 .login-field {
   display: flex;
   flex-direction: column;
@@ -95,6 +103,32 @@
   font-family: 'Segoe UI', system-ui, sans-serif;
   color: rgba(0, 0, 0, 0.88);
   background: #ffffff;
+}
+
+.login-field .ant-input,
+.login-field .ant-input-affix-wrapper {
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 0 12px;
+  font-size: 14px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: rgba(0, 0, 0, 0.88);
+  background: #ffffff;
+}
+
+.login-field .ant-input-affix-wrapper .ant-input {
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.login-field .ant-input-affix-wrapper:focus-within,
+.login-field .ant-input:focus {
+  border-color: #b7c7dc;
+  box-shadow: 0 0 0 2px rgba(183, 199, 220, 0.35);
 }
 
 .login-field input:-webkit-autofill,
@@ -135,6 +169,10 @@
   color: #8ba2c3;
   text-decoration: none;
   font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.login-alert {
+  margin: 4px 0 8px;
 }
 
 .login-register:hover {
