@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
 
-@Injectable()
+@Injectable() //декоратор для внедрения в другие классы
 export class UsersService {
   constructor(
     @InjectRepository(User)

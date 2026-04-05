@@ -1,3 +1,5 @@
+// Точка входа
+
 import 'dotenv/config';
 import { Pool } from 'pg';
 import { NestFactory } from '@nestjs/core';
@@ -10,6 +12,7 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
+
 
 async function ensureDatabaseExists() {
   const host = process.env.DB_HOST;
@@ -43,16 +46,20 @@ async function ensureDatabaseExists() {
   }
 }
 
+
 async function bootstrap() {
   await ensureDatabaseExists();
   const app = await NestFactory.create(AppModule);
+
   app.enableCors({
     origin: ['http://localhost:5173'],
     credentials: true,
   });
+  
   app.setGlobalPrefix('api', {
     exclude: [{ path: 'health', method: RequestMethod.GET }],
   });
+  
   const swaggerConfig = new DocumentBuilder()
     .setTitle('HedgehogHands API')
     .setVersion('1.0')
@@ -61,6 +68,7 @@ async function bootstrap() {
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, swaggerDocument, { useGlobalPrefix: false });
   app.enableCors();
+  
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -83,8 +91,10 @@ async function bootstrap() {
       },
     }),
   );
+  
   app.useGlobalFilters(new ProblemDetailsFilter());
+  
   await app.listen(process.env.PORT ?? 3000);
 }
-
+ 
 bootstrap();

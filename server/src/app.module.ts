@@ -1,3 +1,5 @@
+// Главный модуль
+
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -6,12 +8,15 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 
+// Декоратор Module
 @Module({
+  // какие модули подключаем
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
+
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -30,7 +35,11 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     AuthModule,
   ],
+  // какие контроллеры используем
   controllers: [AppController],
+  // какие сервисы используем
   providers: [AppService],
 })
+
+// Делает класс доступным для импорта в других файлах
 export class AppModule {}

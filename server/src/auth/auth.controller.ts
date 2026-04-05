@@ -36,6 +36,7 @@ const problem = (
 @Controller('auth')
 export class AuthController {
   constructor(
+    // контроллер получает сервисы
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
   ) {}
