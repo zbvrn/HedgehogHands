@@ -8,7 +8,7 @@ import './LoginPage.css'
 
 const roleHomeRoutes = {
   parent: '/parent/children',
-  helper: '/helper/ads',
+  helper: '/helper/announcements',
   admin: '/admin/parents',
 } as const
 

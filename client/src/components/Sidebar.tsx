@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import {
   FileTextOutlined,
+  TagsOutlined,
   ProfileOutlined,
   SearchOutlined,
   SolutionOutlined,
@@ -31,19 +32,20 @@ const navItemsByRole: Record<Role, NavItem[]> = {
     { label: 'Дети', to: '/parent/children', icon: <TeamOutlined /> },
     {
       label: 'Поиск помощника',
-      to: '/parent/helper-search',
+      to: '/parent/search',
       icon: <SearchOutlined />,
     },
     { label: 'Заявки', to: '/parent/requests', icon: <FileTextOutlined /> },
   ],
   helper: [
-    { label: 'Мои объявления', to: '/helper/ads', icon: <ProfileOutlined /> },
+    { label: 'Мои объявления', to: '/helper/announcements', icon: <ProfileOutlined /> },
     { label: 'Заявки', to: '/helper/requests', icon: <FileTextOutlined /> },
     { label: 'Отзывы', to: '/helper/reviews', icon: <StarOutlined /> },
   ],
   admin: [
     { label: 'Родители', to: '/admin/parents', icon: <UserOutlined /> },
     { label: 'Помощники', to: '/admin/helpers', icon: <SolutionOutlined /> },
+    { label: 'Категории', to: '/admin/categories', icon: <TagsOutlined /> },
     { label: 'Заявки', to: '/admin/requests', icon: <FileTextOutlined /> },
   ],
 }

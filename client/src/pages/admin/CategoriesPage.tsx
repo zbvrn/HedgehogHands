@@ -1,0 +1,204 @@
+import { useMemo, useState } from 'react'
+import {
+  Button,
+  Form,
+  Input,
+  Modal,
+  Space,
+  Switch,
+  Table,
+  Tag,
+  Typography,
+  message,
+} from 'antd'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { ColumnsType } from 'antd/es/table'
+import { ApiRequestError } from '../../api/http'
+import {
+  createCategory,
+  getCategories,
+  setCategoryActive,
+  updateCategory,
+  type Category,
+} from '../../api/categories'
+import PageError from '../../components/PageError'
+import PageLoading from '../../components/PageLoading'
+import { useAuth } from '../../context/AuthContext'
+
+type CategoryFormValues = {
+  name: string
+}
+
+function CategoriesPage() {
+  const queryClient = useQueryClient()
+  const { token } = useAuth()
+  const [form] = Form.useForm<CategoryFormValues>()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editing, setEditing] = useState<Category | null>(null)
+
+  const categoriesQuery = useQuery({
+    queryKey: ['categories', { includeInactive: true }],
+    queryFn: () => getCategories(token!, true),
+    enabled: Boolean(token),
+  })
+
+  const createMutation = useMutation({
+    mutationFn: (name: string) => createCategory(token!, name),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['categories'] })
+      message.success('Категория создана')
+      setIsModalOpen(false)
+      setEditing(null)
+      form.resetFields()
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: (params: { id: number; name: string }) =>
+      updateCategory(token!, params.id, params.name),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['categories'] })
+      message.success('Категория обновлена')
+      setIsModalOpen(false)
+      setEditing(null)
+      form.resetFields()
+    },
+  })
+
+  const activeMutation = useMutation({
+    mutationFn: (params: { id: number; isActive: boolean }) =>
+      setCategoryActive(token!, params.id, params.isActive),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['categories'] })
+      message.success('Статус обновлён')
+    },
+  })
+
+  const columns: ColumnsType<Category> = useMemo(
+    () => [
+      {
+        title: 'Название',
+        dataIndex: 'name',
+        key: 'name',
+        render: (value: string) => <Typography.Text>{value}</Typography.Text>,
+      },
+      {
+        title: 'Статус',
+        dataIndex: 'isActive',
+        key: 'isActive',
+        width: 140,
+        render: (value: boolean) =>
+          value ? <Tag color="green">Активна</Tag> : <Tag>Неактивна</Tag>,
+      },
+      {
+        title: 'Действия',
+        key: 'actions',
+        width: 220,
+        render: (_, record) => (
+          <Space>
+            <Button
+              onClick={() => {
+                setEditing(record)
+                form.setFieldsValue({ name: record.name })
+                setIsModalOpen(true)
+              }}
+            >
+              Редактировать
+            </Button>
+            <Switch
+              checked={record.isActive}
+              loading={activeMutation.isPending}
+              onChange={(checked) =>
+                activeMutation.mutate({ id: record.id, isActive: checked })
+              }
+            />
+          </Space>
+        ),
+      },
+    ],
+    [activeMutation, form],
+  )
+
+  if (categoriesQuery.isLoading) {
+    return <PageLoading />
+  }
+
+  if (categoriesQuery.error) {
+    const err = categoriesQuery.error
+    const messageText =
+      err instanceof ApiRequestError ? err.message : 'Ошибка загрузки категорий'
+    return <PageError message={messageText} />
+  }
+
+  const data = categoriesQuery.data ?? []
+
+  return (
+    <div style={{ padding: 24, textAlign: 'left' }}>
+      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+        <Typography.Title level={2} style={{ margin: 0 }}>
+          Категории
+        </Typography.Title>
+        <Button
+          type="primary"
+          onClick={() => {
+            setEditing(null)
+            form.resetFields()
+            setIsModalOpen(true)
+          }}
+        >
+          Создать
+        </Button>
+      </Space>
+
+      <div style={{ marginTop: 16 }}>
+        <Table
+          rowKey="id"
+          columns={columns}
+          dataSource={data}
+          pagination={{ pageSize: 10 }}
+        />
+      </div>
+
+      <Modal
+        open={isModalOpen}
+        title={editing ? 'Редактирование категории' : 'Новая категория'}
+        okText={editing ? 'Сохранить' : 'Создать'}
+        cancelText="Отмена"
+        confirmLoading={createMutation.isPending || updateMutation.isPending}
+        onCancel={() => {
+          setIsModalOpen(false)
+          setEditing(null)
+          form.resetFields()
+        }}
+        onOk={async () => {
+          const values = await form.validateFields()
+          const name = values.name.trim()
+          if (!name) {
+            return
+          }
+          if (editing) {
+            updateMutation.mutate({ id: editing.id, name })
+          } else {
+            createMutation.mutate(name)
+          }
+        }}
+      >
+        <Form form={form} layout="vertical" requiredMark={false}>
+          <Form.Item
+            label="Название"
+            name="name"
+            rules={[
+              { required: true, message: 'Введите название' },
+              { max: 100, message: 'Максимум 100 символов' },
+            ]}
+          >
+            <Input placeholder="Например: Няня" />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  )
+}
+
+export default CategoriesPage
+

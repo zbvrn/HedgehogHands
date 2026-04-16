@@ -67,7 +67,6 @@ async function bootstrap() {
     .build();
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, swaggerDocument, { useGlobalPrefix: false });
-  app.enableCors();
   
   app.useGlobalPipes(
     new ValidationPipe({

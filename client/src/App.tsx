@@ -9,12 +9,19 @@ import RegisterPage from './pages/public/RegisterPage'
 import TicketsListPage from './pages/parent/TicketsListPage'
 import CreateTicketPage from './pages/parent/CreateTicketPage'
 import TicketDetailPage from './pages/TicketDetailPage'
+import RequestDetailPage from './pages/RequestDetailPage'
 import QueueNewPage from './pages/helper/QueueNewPage'
 import QueueAssignedPage from './pages/helper/QueueAssignedPage'
 import QueueResolvedPage from './pages/helper/QueueResolvedPage'
 import ChildrenPage from './pages/parent/ChildrenPage'
 import HelperReviewsPage from './pages/helper/HelperReviewsPage'
-import AdminHelpersPage from './pages/admin/AdminHelpersPage'
+import MyAnnouncementsPage from './pages/helper/MyAnnouncementsPage'
+import HelperRequestsPage from './pages/helper/RequestsPage'
+import ParentRequestsPage from './pages/parent/RequestsPage'
+import SearchPage from './pages/parent/SearchPage'
+import HelpersPage from './pages/admin/HelpersPage'
+import ParentsPage from './pages/admin/ParentsPage'
+import CategoriesPage from './pages/admin/CategoriesPage'
 import PlaceholderPage from './pages/PlaceholderPage'
 
 function HomePage() {
@@ -37,12 +44,12 @@ function App() {
               element={<ChildrenPage />}
             />
             <Route
-              path="/parent/helper-search"
-              element={<PlaceholderPage />}
+              path="/parent/search"
+              element={<SearchPage />}
             />
             <Route
               path="/parent/requests"
-              element={<PlaceholderPage />}
+              element={<ParentRequestsPage />}
             />
             <Route path="/tickets" element={<TicketsListPage />} />
             <Route path="/tickets/new" element={<CreateTicketPage />} />
@@ -50,6 +57,7 @@ function App() {
 
           <Route element={<RequireRole allowedRoles={['parent', 'helper']}><Outlet /></RequireRole>}>
             <Route path="/tickets/:id" element={<TicketDetailPage />} />
+            <Route path="/requests/:id" element={<RequestDetailPage />} />
           </Route>
 
           <Route element={<RequireRole allowedRoles={['helper']}><Outlet /></RequireRole>}>
@@ -58,12 +66,12 @@ function App() {
               element={<HelperReviewsPage />}
             />
             <Route
-              path="/helper/ads"
-              element={<PlaceholderPage />}
+              path="/helper/announcements"
+              element={<MyAnnouncementsPage />}
             />
             <Route
               path="/helper/requests"
-              element={<PlaceholderPage />}
+              element={<HelperRequestsPage />}
             />
             <Route path="/queue/new" element={<QueueNewPage />} />
             <Route path="/queue/assigned" element={<QueueAssignedPage />} />
@@ -73,11 +81,15 @@ function App() {
           <Route element={<RequireRole allowedRoles={['admin']}><Outlet /></RequireRole>}>
             <Route
               path="/admin/helpers"
-              element={<AdminHelpersPage />}
+              element={<HelpersPage />}
             />
             <Route
               path="/admin/parents"
-              element={<PlaceholderPage />}
+              element={<ParentsPage />}
+            />
+            <Route
+              path="/admin/categories"
+              element={<CategoriesPage />}
             />
             <Route
               path="/admin/requests"
