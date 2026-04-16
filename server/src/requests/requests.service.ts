@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   HttpException,
@@ -14,6 +15,8 @@ import { Child } from '../children/child.entity';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { UserRole } from '../users/user.entity';
 import { CreateRequestDto } from './dto/create-request.dto';
+import { ChangeStatusDto } from './dto/change-status.dto';
+import { RejectRequestDto } from './dto/reject-request.dto';
 import { RequestResponseDto } from './dto/request-response.dto';
 import { RequestsQueryDto } from './dto/requests-query.dto';
 import { RequestEntity } from './request.entity';
@@ -158,6 +161,7 @@ export class RequestsService {
       if (role === UserRole.PARENT) {
         qb.andWhere('r.parentId = :parentId', { parentId: requester.userId });
       } else if (role === UserRole.HELPER) {
+        // Helper always sees only requests for own announcements.
         qb.andWhere('a.helperId = :helperId', { helperId: requester.userId });
       } else if (role === UserRole.ADMIN) {
         // no extra constraints
@@ -221,5 +225,127 @@ export class RequestsService {
       );
       throw error;
     }
+  }
+
+  async changeStatus(
+    id: number,
+    dto: ChangeStatusDto,
+    requester: { userId: number; role: string },
+  ): Promise<RequestResponseDto> {
+    const nextStatus = dto.status;
+    try {
+      this.logger.log(
+        `Помощник #${requester.userId} меняет статус заявки #${id} на ${nextStatus}`,
+      );
+
+      const role = requester.role.trim().toLowerCase();
+      if (role !== UserRole.HELPER) {
+        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+      }
+
+      const request = await this.requestsRepository.findOne({
+        where: { id },
+        relations: {
+          announcement: { helper: true, category: true },
+          parent: true,
+          child: true,
+        },
+      });
+      if (!request) {
+        throw new NotFoundException(problem(HttpStatus.NOT_FOUND, 'Request not found'));
+      }
+
+      if (request.announcement?.helperId !== requester.userId) {
+        this.logger.warn(
+          `Помощник #${requester.userId} пытается изменить чужую заявку #${id} (helperId=${request.announcement?.helperId})`,
+        );
+        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+      }
+
+      if (request.status === RequestStatus.RESOLVED || request.status === RequestStatus.REJECTED) {
+        throw new BadRequestException(
+          problem(HttpStatus.BAD_REQUEST, 'Request status is final'),
+        );
+      }
+
+      if (!this.isValidTransition(request.status, nextStatus)) {
+        throw new BadRequestException(
+          problem(HttpStatus.BAD_REQUEST, 'Invalid status transition'),
+        );
+      }
+
+      request.status = nextStatus;
+      await this.requestsRepository.save(request);
+
+      return RequestsMapper.toResponse(request);
+    } catch (error) {
+      this.logger.error(
+        `Ошибка изменения статуса заявки #${id}: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  async reject(
+    id: number,
+    dto: RejectRequestDto,
+    requester: { userId: number; role: string },
+  ): Promise<RequestResponseDto> {
+    const reason = dto.reason?.trim() ?? '';
+    try {
+      this.logger.log(`Помощник #${requester.userId} отклоняет заявку #${id}`);
+
+      const role = requester.role.trim().toLowerCase();
+      if (role !== UserRole.HELPER) {
+        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+      }
+
+      const request = await this.requestsRepository.findOne({
+        where: { id },
+        relations: {
+          announcement: { helper: true, category: true },
+          parent: true,
+          child: true,
+        },
+      });
+      if (!request) {
+        throw new NotFoundException(problem(HttpStatus.NOT_FOUND, 'Request not found'));
+      }
+
+      if (request.announcement?.helperId !== requester.userId) {
+        this.logger.warn(
+          `Помощник #${requester.userId} пытается отклонить чужую заявку #${id} (helperId=${request.announcement?.helperId})`,
+        );
+        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+      }
+
+      if (request.status === RequestStatus.RESOLVED || request.status === RequestStatus.REJECTED) {
+        throw new BadRequestException(
+          problem(HttpStatus.BAD_REQUEST, 'Request status is final'),
+        );
+      }
+
+      request.status = RequestStatus.REJECTED;
+      request.rejectionReason = reason || null;
+      await this.requestsRepository.save(request);
+
+      return RequestsMapper.toResponse(request);
+    } catch (error) {
+      this.logger.error(
+        `Ошибка отклонения заявки #${id}: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  private isValidTransition(from: RequestStatus, to: RequestStatus): boolean {
+    const allowedTransitions: Partial<Record<RequestStatus, RequestStatus[]>> = {
+      [RequestStatus.NEW]: [RequestStatus.IN_PROGRESS],
+      [RequestStatus.IN_PROGRESS]: [RequestStatus.RESOLVED],
+    };
+
+    return allowedTransitions[from]?.includes(to) ?? false;
   }
 }

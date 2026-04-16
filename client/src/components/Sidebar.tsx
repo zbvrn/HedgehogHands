@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import {
   FileTextOutlined,
-  TagsOutlined,
   ProfileOutlined,
   SearchOutlined,
   SolutionOutlined,
   StarOutlined,
+  TagsOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -30,16 +30,14 @@ type SidebarProps = {
 const navItemsByRole: Record<Role, NavItem[]> = {
   parent: [
     { label: 'Дети', to: '/parent/children', icon: <TeamOutlined /> },
-    {
-      label: 'Поиск помощника',
-      to: '/parent/search',
-      icon: <SearchOutlined />,
-    },
+    { label: 'Поиск помощника', to: '/parent/search', icon: <SearchOutlined /> },
     { label: 'Заявки', to: '/parent/requests', icon: <FileTextOutlined /> },
   ],
   helper: [
     { label: 'Мои объявления', to: '/helper/announcements', icon: <ProfileOutlined /> },
-    { label: 'Заявки', to: '/helper/requests', icon: <FileTextOutlined /> },
+    { label: 'Новые отклики', to: '/helper/requests/new', icon: <FileTextOutlined /> },
+    { label: 'В работе', to: '/helper/requests/in-progress', icon: <FileTextOutlined /> },
+    { label: 'Выполненные', to: '/helper/requests/resolved', icon: <FileTextOutlined /> },
     { label: 'Отзывы', to: '/helper/reviews', icon: <StarOutlined /> },
   ],
   admin: [
@@ -109,3 +107,4 @@ function Sidebar({ user, role, onLogout }: SidebarProps) {
 }
 
 export default Sidebar
+

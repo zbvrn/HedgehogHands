@@ -150,7 +150,7 @@ export class AnnouncementsService {
         .leftJoinAndSelect('a.category', 'c')
         .leftJoinAndSelect('a.helper', 'h')
         .where('a.helperId = :helperId', { helperId })
-        .orderBy('a.updatedAt', 'DESC')
+        .orderBy('a.createdAt', 'DESC')
         .skip((page - 1) * limit)
         .take(limit);
 
