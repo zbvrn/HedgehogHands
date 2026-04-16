@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   HttpStatus,
@@ -88,5 +89,12 @@ export class CategoriesController {
     @Body() body: SetActiveCategoryDto,
   ) {
     return this.categoriesService.setActive(id, body);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('Admin')
+  @Delete(':id')
+  deleteCategory(@Param('id', ParseIntPipe) id: number) {
+    return this.categoriesService.delete(id);
   }
 }

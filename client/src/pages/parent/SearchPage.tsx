@@ -12,7 +12,7 @@ import {
   Typography,
   message,
 } from 'antd'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiRequestError } from '../../api/http'
 import { getCategories } from '../../api/categories'
 import { getAnnouncements, type Announcement } from '../../api/announcements'
@@ -22,6 +22,7 @@ import PageEmpty from '../../components/PageEmpty'
 import PageError from '../../components/PageError'
 import PageLoading from '../../components/PageLoading'
 import { useAuth } from '../../context/AuthContext'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 
 type RequestFormValues = {
   childId: number
@@ -35,6 +36,7 @@ function SearchPage() {
   const limit = 10
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined)
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim(), 350)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null)
@@ -53,9 +55,11 @@ function SearchPage() {
   })
 
   const announcementsQuery = useQuery({
-    queryKey: ['announcements', { categoryId, search, page, limit }],
-    queryFn: () => getAnnouncements(token!, { categoryId, search, page, limit }),
+    queryKey: ['announcements', { categoryId, search: debouncedSearch, page, limit }],
+    queryFn: () =>
+      getAnnouncements(token!, { categoryId, search: debouncedSearch, page, limit }),
     enabled: Boolean(token),
+    placeholderData: keepPreviousData,
   })
 
   const createRequestMutation = useMutation({
@@ -78,9 +82,8 @@ function SearchPage() {
     return items
   }, [categoriesQuery.data])
 
-  if (categoriesQuery.isLoading || announcementsQuery.isLoading) {
-    return <PageLoading />
-  }
+  const isInitialLoading = categoriesQuery.isLoading || announcementsQuery.isLoading
+  if (isInitialLoading && !announcementsQuery.data) return <PageLoading />
 
   const error = categoriesQuery.error ?? announcementsQuery.error
   if (error) {
@@ -113,8 +116,10 @@ function SearchPage() {
               placeholder="Поиск по названию или описанию"
               style={{ width: 360 }}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onSearch={() => setPage(1)}
+              onChange={(e) => {
+                setPage(1)
+                setSearch(e.target.value)
+              }}
               allowClear
             />
           </Space>
@@ -152,8 +157,10 @@ function SearchPage() {
             placeholder="Поиск по названию или описанию"
             style={{ width: 360 }}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onSearch={() => setPage(1)}
+            onChange={(e) => {
+              setPage(1)
+              setSearch(e.target.value)
+            }}
             allowClear
           />
         </Space>

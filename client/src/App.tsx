@@ -7,11 +7,9 @@ import RequireRole from './components/RequireRole'
 import HelpersPage from './pages/admin/HelpersPage'
 import ParentsPage from './pages/admin/ParentsPage'
 import CategoriesPage from './pages/admin/CategoriesPage'
-import PlaceholderPage from './pages/PlaceholderPage'
 import NewRequestsPage from './pages/helper/NewRequestsPage'
 import InProgressRequestsPage from './pages/helper/InProgressRequestsPage'
 import ResolvedRequestsPage from './pages/helper/ResolvedRequestsPage'
-import HelperReviewsPage from './pages/helper/HelperReviewsPage'
 import MyAnnouncementsPage from './pages/helper/MyAnnouncementsPage'
 import RequestDetailPage from './pages/RequestDetailPage'
 import CreateTicketPage from './pages/parent/CreateTicketPage'
@@ -51,7 +49,6 @@ function App() {
           </Route>
 
           <Route element={<RequireRole allowedRoles={['helper']}><Outlet /></RequireRole>}>
-            <Route path="/helper/reviews" element={<HelperReviewsPage />} />
             <Route path="/helper/announcements" element={<MyAnnouncementsPage />} />
             <Route path="/helper/requests" element={<Navigate to="/helper/requests/new" replace />} />
             <Route path="/helper/requests/new" element={<NewRequestsPage />} />
@@ -63,7 +60,6 @@ function App() {
             <Route path="/admin/helpers" element={<HelpersPage />} />
             <Route path="/admin/parents" element={<ParentsPage />} />
             <Route path="/admin/categories" element={<CategoriesPage />} />
-            <Route path="/admin/requests" element={<PlaceholderPage />} />
           </Route>
         </Route>
 
@@ -75,4 +71,3 @@ function App() {
 }
 
 export default App
-

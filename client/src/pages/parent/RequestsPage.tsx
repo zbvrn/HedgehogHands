@@ -38,6 +38,7 @@ function RequestsPage() {
 
   const columns: ColumnsType<RequestItem> = useMemo(
     () => [
+      { title: '№', dataIndex: 'number', key: 'number', width: 80 },
       {
         title: 'Дата',
         dataIndex: 'createdAt',
@@ -49,15 +50,13 @@ function RequestsPage() {
         title: 'Объявление',
         dataIndex: ['announcement', 'title'],
         key: 'announcement',
-        render: (_, record) => (
-          <Link to={`/requests/${record.id}`}>{record.announcement.title}</Link>
-        ),
+        render: (_, record) => <Link to={`/requests/${record.id}`}>{record.announcement.title}</Link>,
       },
       {
         title: 'Ребёнок',
         dataIndex: ['child', 'name'],
         key: 'child',
-        width: 200,
+        width: 220,
         render: (_, record) => `${record.child.name} (${record.child.age})`,
       },
       {
@@ -74,13 +73,14 @@ function RequestsPage() {
   if (requestsQuery.isLoading) return <PageLoading />
   if (requestsQuery.error) {
     const err = requestsQuery.error
-    const messageText =
-      err instanceof ApiRequestError ? err.message : 'Ошибка загрузки заявок'
+    const messageText = err instanceof ApiRequestError ? err.message : 'Ошибка загрузки заявок'
     return <PageError message={messageText} />
   }
 
   const data = requestsQuery.data
-  if (!data || !data.items.length) {
+  const items = data?.items ?? []
+
+  if (!items.length) {
     return (
       <div style={{ padding: 24, textAlign: 'left' }}>
         <Space style={{ width: '100%', justifyContent: 'space-between' }}>
@@ -124,13 +124,13 @@ function RequestsPage() {
       </Space>
 
       <div style={{ marginTop: 16 }}>
-        <Table rowKey="id" columns={columns} dataSource={data.items} pagination={false} />
+        <Table rowKey="id" columns={columns} dataSource={items} pagination={false} />
       </div>
 
       <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
         <Pagination
           current={page}
-          total={data.total}
+          total={data?.total ?? 0}
           pageSize={limit}
           onChange={(nextPage) => setPage(nextPage)}
           showSizeChanger={false}

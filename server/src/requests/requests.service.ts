@@ -94,9 +94,17 @@ export class RequestsService {
         );
       }
 
+      const rawMax = await this.requestsRepository
+        .createQueryBuilder('r')
+        .select('MAX(r.parentRequestNumber)', 'max')
+        .where('r.parentId = :parentId', { parentId })
+        .getRawOne<{ max: string | null }>();
+      const parentRequestNumber = (rawMax?.max ? Number(rawMax.max) : 0) + 1;
+
       const entity = this.requestsRepository.create({
         announcementId: dto.announcementId,
         parentId,
+        parentRequestNumber,
         childId: dto.childId,
         message: dto.message?.trim() ?? null,
         status: RequestStatus.NEW,

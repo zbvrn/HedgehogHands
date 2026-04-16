@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Announcement } from '../announcements/announcement.entity';
 import { Category } from './category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -40,6 +41,8 @@ export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoriesRepository: Repository<Category>,
+    @InjectRepository(Announcement)
+    private readonly announcementsRepository: Repository<Announcement>,
   ) {}
 
   async list(includeInactive: boolean): Promise<CategoryResponseDto[]> {
@@ -150,5 +153,30 @@ export class CategoriesService {
       throw error;
     }
   }
-}
 
+  async delete(id: number): Promise<{ ok: true }> {
+    try {
+      this.logger.log(`Удаление категории #${id}`);
+      const category = await this.categoriesRepository.findOne({ where: { id } });
+      if (!category) {
+        throw new NotFoundException(problem(HttpStatus.NOT_FOUND, 'Category not found'));
+      }
+
+      const usedCount = await this.announcementsRepository.count({ where: { categoryId: id } });
+      if (usedCount > 0) {
+        throw new BadRequestException(
+          problem(HttpStatus.BAD_REQUEST, 'Category is used by announcements'),
+        );
+      }
+
+      await this.categoriesRepository.delete({ id });
+      return { ok: true };
+    } catch (error) {
+      this.logger.error(
+        `Ошибка удаления категории #${id}: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+}

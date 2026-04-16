@@ -5,6 +5,7 @@ export type RequestStatus = 'New' | 'InProgress' | 'Resolved' | 'Rejected'
 
 export type RequestItem = {
   id: number
+  number: number
   status: RequestStatus
   message?: string | null
   rejectionReason?: string | null

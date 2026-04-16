@@ -5,6 +5,7 @@ export class RequestsMapper {
   static toResponse(request: RequestEntity): RequestResponseDto {
     return {
       id: request.id,
+      number: request.parentRequestNumber ?? 0,
       status: request.status,
       message: request.message ?? null,
       rejectionReason: request.rejectionReason ?? null,
@@ -34,4 +35,3 @@ export class RequestsMapper {
     };
   }
 }
-

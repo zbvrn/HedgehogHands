@@ -70,10 +70,7 @@ function RequestsTable({ requests, mode, isLoading, onStatusChange, onReject }: 
         if (mode === 'new') {
           return (
             <Space>
-              <Button
-                type="primary"
-                onClick={() => onStatusChange?.(record.id, 'InProgress')}
-              >
+              <Button type="primary" onClick={() => onStatusChange?.(record.id, 'InProgress')}>
                 Взять в работу
               </Button>
               <Button danger onClick={() => onReject?.(record.id)}>
@@ -87,9 +84,6 @@ function RequestsTable({ requests, mode, isLoading, onStatusChange, onReject }: 
           <Space>
             <Button type="primary" onClick={() => onStatusChange?.(record.id, 'Resolved')}>
               Завершить
-            </Button>
-            <Button danger onClick={() => onReject?.(record.id)}>
-              Отклонить
             </Button>
           </Space>
         )

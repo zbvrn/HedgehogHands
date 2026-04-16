@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Select, Space, Table, Typography, message } from 'antd'
+import { Modal, Select, Space, Table, Typography, message } from 'antd'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ColumnsType } from 'antd/es/table'
 import { ApiRequestError } from '../../api/http'
@@ -54,9 +54,16 @@ function ParentsPage() {
             options={roleOptions}
             style={{ width: '100%' }}
             disabled={updateRoleMutation.isPending}
-            onChange={(nextRole) =>
-              updateRoleMutation.mutate({ id: record.id, role: nextRole })
-            }
+            onChange={(nextRole) => {
+              Modal.confirm({
+                title: 'Подтвердите смену роли',
+                content: `Пользователь #${record.id}: ${record.role} → ${nextRole}`,
+                okText: 'Сменить',
+                cancelText: 'Отмена',
+                okButtonProps: { danger: true, loading: updateRoleMutation.isPending },
+                onOk: async () => updateRoleMutation.mutate({ id: record.id, role: nextRole }),
+              })
+            }}
           />
         ),
       },
@@ -96,4 +103,3 @@ function ParentsPage() {
 }
 
 export default ParentsPage
-

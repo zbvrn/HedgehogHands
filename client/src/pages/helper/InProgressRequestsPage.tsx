@@ -2,17 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Modal, Pagination, Space, Typography, message } from 'antd'
 import { useState } from 'react'
 import { ApiRequestError } from '../../api/http'
-import {
-  changeRequestStatus,
-  getRequests,
-  rejectRequest,
-  type RequestItem,
-} from '../../api/requests'
+import { changeRequestStatus, getRequests, type RequestItem } from '../../api/requests'
 import PageEmpty from '../../components/PageEmpty'
 import PageError from '../../components/PageError'
 import PageLoading from '../../components/PageLoading'
 import RequestsTable from '../../components/requests/RequestsTable'
-import RejectRequestModal from '../../components/requests/RejectRequestModal'
 import { useAuth } from '../../context/AuthContext'
 
 function InProgressRequestsPage() {
@@ -20,9 +14,6 @@ function InProgressRequestsPage() {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const limit = 10
-
-  const [rejectOpen, setRejectOpen] = useState(false)
-  const [rejectId, setRejectId] = useState<number | null>(null)
 
   const requestsQuery = useQuery({
     queryKey: ['requests', 'helper', 'inProgress', { page, limit }],
@@ -43,27 +34,10 @@ function InProgressRequestsPage() {
     },
   })
 
-  const rejectMutation = useMutation({
-    mutationFn: (args: { id: number; reason: string }) => rejectRequest(token!, args.id, args.reason),
-    onSuccess: async (updated: RequestItem) => {
-      message.success(`Заявка #${updated.id} отклонена`)
-      setRejectOpen(false)
-      setRejectId(null)
-      await queryClient.invalidateQueries({ queryKey: ['requests'] })
-    },
-    onError: (err) => {
-      const msg = err instanceof ApiRequestError ? err.message : 'Не удалось отклонить заявку'
-      message.error(msg)
-    },
-  })
-
-  const isBusy = statusMutation.isPending || rejectMutation.isPending
-
   if (requestsQuery.isLoading) return <PageLoading />
   if (requestsQuery.error) {
     const err = requestsQuery.error
-    const messageText =
-      err instanceof ApiRequestError ? err.message : 'Ошибка загрузки заявок'
+    const messageText = err instanceof ApiRequestError ? err.message : 'Ошибка загрузки заявок'
     return <PageError message={messageText} />
   }
 
@@ -95,15 +69,10 @@ function InProgressRequestsPage() {
                 okText: 'Завершить',
                 cancelText: 'Отмена',
                 okButtonProps: { loading: statusMutation.isPending },
-                cancelButtonProps: { disabled: isBusy },
                 onOk: async () => {
                   await statusMutation.mutateAsync({ id, status: 'Resolved' })
                 },
               })
-            }}
-            onReject={(id) => {
-              setRejectId(id)
-              setRejectOpen(true)
             }}
           />
 
@@ -118,20 +87,6 @@ function InProgressRequestsPage() {
           </div>
         </div>
       )}
-
-      <RejectRequestModal
-        open={rejectOpen}
-        isLoading={rejectMutation.isPending}
-        onCancel={() => {
-          if (isBusy) return
-          setRejectOpen(false)
-          setRejectId(null)
-        }}
-        onSubmit={(reason) => {
-          if (!rejectId) return
-          rejectMutation.mutate({ id: rejectId, reason })
-        }}
-      />
     </div>
   )
 }

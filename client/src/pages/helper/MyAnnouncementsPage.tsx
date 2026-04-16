@@ -92,7 +92,11 @@ function MyAnnouncementsPage() {
     mutationFn: (id: number) => deleteAnnouncement(token!, id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['announcements', 'my'] })
-      message.success('Объявление деактивировано')
+      message.success('Объявление удалено')
+    },
+    onError: (err) => {
+      const msg = err instanceof ApiRequestError ? err.message : 'Не удалось удалить объявление'
+      message.error(msg)
     },
   })
 
@@ -158,16 +162,16 @@ function MyAnnouncementsPage() {
               loading={deleteMutation.isPending}
               onClick={() => {
                 Modal.confirm({
-                  title: 'Деактивировать объявление?',
-                  content: 'Оно исчезнет из поиска родителей.',
-                  okText: 'Деактивировать',
+                  title: 'Удалить объявление?',
+                  content: 'Удаление удалит объявление и связанные с ним заявки.',
+                  okText: 'Удалить',
                   cancelText: 'Отмена',
-                  okButtonProps: { danger: true },
+                  okButtonProps: { danger: true, loading: deleteMutation.isPending },
                   onOk: async () => deleteMutation.mutate(record.id),
                 })
               }}
             >
-              Деактивировать
+              Удалить
             </Button>
           </Space>
         ),

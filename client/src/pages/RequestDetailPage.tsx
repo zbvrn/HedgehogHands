@@ -71,7 +71,7 @@ function RequestDetailPage() {
   return (
     <div style={{ padding: 24, textAlign: 'left' }}>
       <Typography.Title level={2} style={{ marginTop: 0 }}>
-        Заявка #{data.id}
+        {role === 'parent' ? `Заявка #${data.number}` : `Заявка #${data.id}`}
       </Typography.Title>
 
       {isHelperOwner && (data.status === 'New' || data.status === 'InProgress') ? (
@@ -115,9 +115,15 @@ function RequestDetailPage() {
               </Button>
             )}
 
-            <Button danger onClick={() => setRejectOpen(true)} loading={rejectMutation.isPending}>
-              Отклонить
-            </Button>
+            {data.status === 'New' ? (
+              <Button
+                danger
+                onClick={() => setRejectOpen(true)}
+                loading={rejectMutation.isPending}
+              >
+                Отклонить
+              </Button>
+            ) : null}
           </Space>
         </div>
       ) : null}
@@ -155,4 +161,3 @@ function RequestDetailPage() {
 }
 
 export default RequestDetailPage
-

@@ -16,6 +16,7 @@ import type { ColumnsType } from 'antd/es/table'
 import { ApiRequestError } from '../../api/http'
 import {
   createCategory,
+  deleteCategory,
   getCategories,
   setCategoryActive,
   updateCategory,
@@ -74,6 +75,18 @@ function CategoriesPage() {
     },
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteCategory(token!, id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['categories'] })
+      message.success('Категория удалена')
+    },
+    onError: (err) => {
+      const msg = err instanceof ApiRequestError ? err.message : 'Не удалось удалить категорию'
+      message.error(msg)
+    },
+  })
+
   const columns: ColumnsType<Category> = useMemo(
     () => [
       {
@@ -93,7 +106,7 @@ function CategoriesPage() {
       {
         title: 'Действия',
         key: 'actions',
-        width: 220,
+        width: 320,
         render: (_, record) => (
           <Space>
             <Button
@@ -112,11 +125,27 @@ function CategoriesPage() {
                 activeMutation.mutate({ id: record.id, isActive: checked })
               }
             />
+            <Button
+              danger
+              loading={deleteMutation.isPending}
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Удалить категорию?',
+                  content: 'Удаление возможно только если нет объявлений в этой категории.',
+                  okText: 'Удалить',
+                  cancelText: 'Отмена',
+                  okButtonProps: { danger: true, loading: deleteMutation.isPending },
+                  onOk: async () => deleteMutation.mutate(record.id),
+                })
+              }}
+            >
+              Удалить
+            </Button>
           </Space>
         ),
       },
     ],
-    [activeMutation, form],
+    [activeMutation, deleteMutation, form],
   )
 
   if (categoriesQuery.isLoading) {
@@ -201,4 +230,3 @@ function CategoriesPage() {
 }
 
 export default CategoriesPage
-

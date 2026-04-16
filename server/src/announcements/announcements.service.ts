@@ -292,4 +292,30 @@ export class AnnouncementsService {
       throw error;
     }
   }
+
+  async remove(id: number, helperId: number): Promise<{ ok: true }> {
+    try {
+      this.logger.log(`Удаление объявления #${id} помощником #${helperId}`);
+      const announcement = await this.announcementsRepository.findOne({
+        where: { id },
+      });
+      if (!announcement) {
+        throw new NotFoundException(
+          problem(HttpStatus.NOT_FOUND, 'Announcement not found'),
+        );
+      }
+      if (announcement.helperId !== helperId) {
+        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+      }
+
+      await this.announcementsRepository.delete({ id });
+      return { ok: true };
+    } catch (error) {
+      this.logger.error(
+        `Ошибка удаления объявления #${id}: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
 }

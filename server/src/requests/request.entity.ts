@@ -46,7 +46,9 @@ export class RequestEntity {
   @Column({ type: 'text', name: 'rejection_reason', nullable: true })
   rejectionReason?: string | null;
 
+  @Column({ type: 'int', name: 'parent_request_number' })
+  parentRequestNumber!: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }
-

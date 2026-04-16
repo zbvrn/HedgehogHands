@@ -59,3 +59,11 @@ export async function setCategoryActive(
   })
 }
 
+export async function deleteCategory(token: string, id: number): Promise<{ ok: true }> {
+  return apiRequest<{ ok: true }>(`/api/categories/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}

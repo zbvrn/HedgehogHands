@@ -4,7 +4,6 @@ import {
   ProfileOutlined,
   SearchOutlined,
   SolutionOutlined,
-  StarOutlined,
   TagsOutlined,
   TeamOutlined,
   UserOutlined,
@@ -38,13 +37,11 @@ const navItemsByRole: Record<Role, NavItem[]> = {
     { label: 'Новые отклики', to: '/helper/requests/new', icon: <FileTextOutlined /> },
     { label: 'В работе', to: '/helper/requests/in-progress', icon: <FileTextOutlined /> },
     { label: 'Выполненные', to: '/helper/requests/resolved', icon: <FileTextOutlined /> },
-    { label: 'Отзывы', to: '/helper/reviews', icon: <StarOutlined /> },
   ],
   admin: [
     { label: 'Родители', to: '/admin/parents', icon: <UserOutlined /> },
     { label: 'Помощники', to: '/admin/helpers', icon: <SolutionOutlined /> },
     { label: 'Категории', to: '/admin/categories', icon: <TagsOutlined /> },
-    { label: 'Заявки', to: '/admin/requests', icon: <FileTextOutlined /> },
   ],
 }
 
@@ -107,4 +104,3 @@ function Sidebar({ user, role, onLogout }: SidebarProps) {
 }
 
 export default Sidebar
-

@@ -75,6 +75,6 @@ export class AnnouncementsController {
   @Roles('Helper')
   @Delete(':id')
   delete(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number) {
-    return this.announcementsService.deactivate(id, req.user!.sub);
+    return this.announcementsService.remove(id, req.user!.sub);
   }
 }
