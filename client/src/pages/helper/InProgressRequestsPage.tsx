@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Modal, Pagination, Space, Typography, message } from 'antd'
+import { Modal, Pagination, Typography, message } from 'antd'
 import { useState } from 'react'
 import { ApiRequestError } from '../../api/http'
-import { changeRequestStatus, getRequests, type RequestItem } from '../../api/requests'
+import { changeRequestStatus, getRequests } from '../../api/requests'
 import PageEmpty from '../../components/PageEmpty'
 import PageError from '../../components/PageError'
 import PageLoading from '../../components/PageLoading'
+import HelperRequestTabs from '../../components/requests/HelperRequestTabs'
 import RequestsTable from '../../components/requests/RequestsTable'
 import { useAuth } from '../../context/AuthContext'
 
@@ -24,8 +25,8 @@ function InProgressRequestsPage() {
   const statusMutation = useMutation({
     mutationFn: (args: { id: number; status: 'Resolved' }) =>
       changeRequestStatus(token!, args.id, args.status),
-    onSuccess: async (updated: RequestItem) => {
-      message.success(`Заявка #${updated.id} завершена`)
+    onSuccess: async () => {
+      message.success('Заявка завершена')
       await queryClient.invalidateQueries({ queryKey: ['requests'] })
     },
     onError: (err) => {
@@ -45,19 +46,20 @@ function InProgressRequestsPage() {
   const items = data?.items ?? []
 
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+    <div className="page-view">
+      <div className="page-view__header">
         <Typography.Title level={2} style={{ margin: 0 }}>
           В работе
         </Typography.Title>
-      </Space>
+        <HelperRequestTabs />
+      </div>
 
       {!items.length ? (
-        <div style={{ marginTop: 16 }}>
+        <div className="page-view__body">
           <PageEmpty description="Заявок в работе пока нет" />
         </div>
       ) : (
-        <div style={{ marginTop: 16 }}>
+        <div className="page-view__body">
           <RequestsTable
             mode="inProgress"
             requests={items}
@@ -75,21 +77,22 @@ function InProgressRequestsPage() {
               })
             }}
           />
-
-          <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-            <Pagination
-              current={page}
-              total={data?.total ?? 0}
-              pageSize={limit}
-              onChange={(nextPage) => setPage(nextPage)}
-              showSizeChanger={false}
-            />
-          </div>
         </div>
       )}
+
+      {data?.total ? (
+        <div className="page-view__footer">
+          <Pagination
+            current={page}
+            total={data.total}
+            pageSize={limit}
+            onChange={(nextPage) => setPage(nextPage)}
+            showSizeChanger={false}
+          />
+        </div>
+      ) : null}
     </div>
   )
 }
 
 export default InProgressRequestsPage
-

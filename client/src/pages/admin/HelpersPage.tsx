@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Modal, Select, Space, Table, Typography, message } from 'antd'
+import { Modal, Select, Table, Typography, message } from 'antd'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ColumnsType } from 'antd/es/table'
 import { ApiRequestError } from '../../api/http'
@@ -11,6 +11,7 @@ import {
 } from '../../api/users'
 import PageError from '../../components/PageError'
 import PageLoading from '../../components/PageLoading'
+import { roleLabels } from '../../components/RoleLabels'
 import { useAuth } from '../../context/AuthContext'
 
 const roleOptions: { value: UserRole; label: string }[] = [
@@ -40,6 +41,12 @@ function HelpersPage() {
 
   const columns: ColumnsType<UserResponse> = useMemo(
     () => [
+      {
+        title: '№',
+        key: 'rowNumber',
+        width: 72,
+        render: (_value, _record, index) => index + 1,
+      },
       { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
       { title: 'Имя', dataIndex: 'name', key: 'name' },
       { title: 'Email', dataIndex: 'email', key: 'email' },
@@ -57,7 +64,7 @@ function HelpersPage() {
             onChange={(nextRole) => {
               Modal.confirm({
                 title: 'Подтвердите смену роли',
-                content: `Пользователь #${record.id}: ${record.role} → ${nextRole}`,
+                content: `Пользователь #${record.id}: ${roleLabels[record.role]} → ${roleLabels[nextRole]}`,
                 okText: 'Сменить',
                 cancelText: 'Отмена',
                 okButtonProps: { danger: true, loading: updateRoleMutation.isPending },
@@ -83,19 +90,25 @@ function HelpersPage() {
   }
 
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-        <Typography.Title level={2} style={{ margin: 0 }}>
-          Помощники
-        </Typography.Title>
-      </Space>
+    <div className="page-view">
+      <div className="page-view__header">
+        <div>
+          <Typography.Title level={2} style={{ margin: 0 }}>
+            Помощники
+          </Typography.Title>
+          <Typography.Text type="secondary">
+            Всего в системе: {helpersQuery.data?.length ?? 0}
+          </Typography.Text>
+        </div>
+      </div>
 
-      <div style={{ marginTop: 16 }}>
+      <div className="page-view__body">
         <Table
           rowKey="id"
           columns={columns}
           dataSource={helpersQuery.data ?? []}
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: 10, showSizeChanger: false, position: ['bottomRight'] }}
+          size="small"
         />
       </div>
     </div>

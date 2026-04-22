@@ -162,8 +162,8 @@ function CategoriesPage() {
   const data = categoriesQuery.data ?? []
 
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+    <div className="page-view">
+      <div className="page-view__header">
         <Typography.Title level={2} style={{ margin: 0 }}>
           Категории
         </Typography.Title>
@@ -177,14 +177,15 @@ function CategoriesPage() {
         >
           Создать
         </Button>
-      </Space>
+      </div>
 
-      <div style={{ marginTop: 16 }}>
+      <div className="page-view__body">
         <Table
           rowKey="id"
           columns={columns}
           dataSource={data}
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: 10, showSizeChanger: false, position: ['bottomRight'] }}
+          size="small"
         />
       </div>
 

@@ -191,8 +191,8 @@ function MyAnnouncementsPage() {
   const data = myQuery.data
 
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+    <div className="page-view">
+      <div className="page-view__header">
         <Typography.Title level={2} style={{ margin: 0 }}>
           Мои объявления
         </Typography.Title>
@@ -206,18 +206,24 @@ function MyAnnouncementsPage() {
         >
           Создать
         </Button>
-      </Space>
+      </div>
 
-      {data?.items?.length ? (
-        <div style={{ marginTop: 16 }}>
-          <Table rowKey="id" columns={columns} dataSource={data.items} pagination={false} />
-        </div>
-      ) : (
-        <PageEmpty description="У вас пока нет объявлений" />
-      )}
+      <div className="page-view__body">
+        {data?.items?.length ? (
+          <Table
+            rowKey="id"
+            columns={columns}
+            dataSource={data.items}
+            pagination={false}
+            size="small"
+          />
+        ) : (
+          <PageEmpty description="У вас пока нет объявлений" />
+        )}
+      </div>
 
       {data?.total ? (
-        <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+        <div className="page-view__footer">
           <Pagination
             current={page}
             total={data.total}

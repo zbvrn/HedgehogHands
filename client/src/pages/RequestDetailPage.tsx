@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, Card, Descriptions, Modal, Space, Tag, Typography, message } from 'antd'
+import { Button, Card, Descriptions, Modal, Space, Typography, message } from 'antd'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ApiRequestError } from '../api/http'
@@ -7,6 +7,7 @@ import { changeRequestStatus, getRequestById, rejectRequest } from '../api/reque
 import PageError from '../components/PageError'
 import PageLoading from '../components/PageLoading'
 import RejectRequestModal from '../components/requests/RejectRequestModal'
+import { renderRequestStatusTag } from '../components/requests/requestStatus'
 import { useAuth } from '../context/AuthContext'
 
 function RequestDetailPage() {
@@ -61,21 +62,16 @@ function RequestDetailPage() {
   const isHelperOwner =
     role === 'helper' && Boolean(user) && user!.id === data.announcement.helper.id
 
-  const statusTag = (() => {
-    if (data.status === 'New') return <Tag color="blue">New</Tag>
-    if (data.status === 'InProgress') return <Tag color="gold">InProgress</Tag>
-    if (data.status === 'Resolved') return <Tag color="green">Resolved</Tag>
-    return <Tag color="red">Rejected</Tag>
-  })()
-
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      <Typography.Title level={2} style={{ marginTop: 0 }}>
-        {role === 'parent' ? `Заявка #${data.number}` : `Заявка #${data.id}`}
-      </Typography.Title>
+    <div className="page-view">
+      <div className="page-view__header">
+        <Typography.Title level={2} style={{ margin: 0 }}>
+          {role === 'parent' ? `Заявка №${data.number}` : 'Детали заявки'}
+        </Typography.Title>
+      </div>
 
       {isHelperOwner && (data.status === 'New' || data.status === 'InProgress') ? (
-        <div style={{ marginBottom: 12 }}>
+        <div>
           <Space>
             {data.status === 'New' ? (
               <Button
@@ -128,9 +124,9 @@ function RequestDetailPage() {
         </div>
       ) : null}
 
-      <Card>
+      <Card className="page-view__body">
         <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label="Статус">{statusTag}</Descriptions.Item>
+          <Descriptions.Item label="Статус">{renderRequestStatusTag(data.status)}</Descriptions.Item>
           <Descriptions.Item label="Дата">
             {new Date(data.createdAt).toLocaleString()}
           </Descriptions.Item>

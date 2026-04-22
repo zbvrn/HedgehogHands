@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import { Pagination, Space, Typography } from 'antd'
+import { Pagination, Typography } from 'antd'
 import { useState } from 'react'
 import { ApiRequestError } from '../../api/http'
 import { getRequests } from '../../api/requests'
 import PageEmpty from '../../components/PageEmpty'
 import PageError from '../../components/PageError'
 import PageLoading from '../../components/PageLoading'
+import HelperRequestTabs from '../../components/requests/HelperRequestTabs'
 import RequestsTable from '../../components/requests/RequestsTable'
 import { useAuth } from '../../context/AuthContext'
 
@@ -32,35 +33,37 @@ function ResolvedRequestsPage() {
   const items = data?.items ?? []
 
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+    <div className="page-view">
+      <div className="page-view__header">
         <Typography.Title level={2} style={{ margin: 0 }}>
           Выполненные
         </Typography.Title>
-      </Space>
+        <HelperRequestTabs />
+      </div>
 
       {!items.length ? (
-        <div style={{ marginTop: 16 }}>
+        <div className="page-view__body">
           <PageEmpty description="Выполненных заявок пока нет" />
         </div>
       ) : (
-        <div style={{ marginTop: 16 }}>
+        <div className="page-view__body">
           <RequestsTable mode="resolved" requests={items} isLoading={requestsQuery.isFetching} />
-
-          <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-            <Pagination
-              current={page}
-              total={data?.total ?? 0}
-              pageSize={limit}
-              onChange={(nextPage) => setPage(nextPage)}
-              showSizeChanger={false}
-            />
-          </div>
         </div>
       )}
+
+      {data?.total ? (
+        <div className="page-view__footer">
+          <Pagination
+            current={page}
+            total={data.total}
+            pageSize={limit}
+            onChange={(nextPage) => setPage(nextPage)}
+            showSizeChanger={false}
+          />
+        </div>
+      ) : null}
     </div>
   )
 }
 
 export default ResolvedRequestsPage
-

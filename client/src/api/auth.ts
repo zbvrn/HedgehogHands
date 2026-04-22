@@ -1,6 +1,7 @@
 import { apiRequest } from './http';
 
 export type AuthRole = 'parent' | 'helper' | 'admin';
+export type RegisterRole = Exclude<AuthRole, 'admin'>;
 
 export type AuthUser = {
   id: number;
@@ -27,10 +28,11 @@ export async function registerRequest(
   email: string,
   password: string,
   name: string,
+  role: RegisterRole,
 ): Promise<AuthTokenResponse> {
   return apiRequest<AuthTokenResponse>('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, password, name }),
+    body: JSON.stringify({ email, password, name, role }),
   });
 }
 

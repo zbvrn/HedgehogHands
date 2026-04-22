@@ -15,13 +15,14 @@ export class AuthService {
     email: string;
     password: string;
     name: string;
+    role: UserRole.PARENT | UserRole.HELPER;
   }): Promise<{ accessToken: string; user: User }> {
     const passwordHash = await bcrypt.hash(params.password, 10);
     const user = await this.usersService.createUser({
       email: params.email,
       passwordHash,
       name: params.name,
-      role: UserRole.PARENT,
+      role: params.role,
     });
     const accessToken = await this.signToken(user);
     return { accessToken, user };

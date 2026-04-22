@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Form, Input } from 'antd'
+import { Alert, Button, Form, Input, Segmented } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
+import type { RegisterRole } from '../../api/auth'
 import { useAuth } from '../../context/AuthContext'
 import { ApiRequestError } from '../../api/http'
 import logo from '../../assets/Logo.png'
@@ -19,6 +20,7 @@ function RegisterPage() {
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
+  const [selectedRole, setSelectedRole] = useState<RegisterRole>('parent')
   const [validationError, setValidationError] = useState<string | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -58,11 +60,13 @@ function RegisterPage() {
             setServerError(null)
             setIsSubmitting(true)
             try {
-              await register(email, password, name)
+              await register(email, password, name, selectedRole)
             } catch (err) {
               if (err instanceof ApiRequestError && err.status === 400) {
                 setValidationError(err.message)
-                form.setFields([{ name: 'email', errors: [err.message] }])
+                if (err.message === 'Email already registered') {
+                  form.setFields([{ name: 'email', errors: [err.message] }])
+                }
               } else {
                 setServerError(err instanceof Error ? err.message : 'Ошибка регистрации')
               }
@@ -123,6 +127,22 @@ function RegisterPage() {
             ]}
           >
             <Input.Password placeholder="Подтвердите пароль" />
+          </Form.Item>
+          <Form.Item
+            name="role"
+            className="login-field login-field--role"
+            initialValue="parent"
+            rules={[{ required: true, message: 'Выберите статус' }]}
+          >
+            <Segmented
+              block
+              value={selectedRole}
+              onChange={(value) => setSelectedRole(value as RegisterRole)}
+              options={[
+                { value: 'parent', label: 'Родитель' },
+                { value: 'helper', label: 'Помощник' },
+              ]}
+            />
           </Form.Item>
           {validationError && (
             <Alert

@@ -8,7 +8,7 @@
 }
 
 .login-card {
-  width: 400px;
+  width: 380px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -20,19 +20,19 @@
 }
 
 .login-card__logo {
-  width: 350px;
+  width: 330px;
   height: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 16px 0 2px;
+  padding: 10px 0 0;
   box-sizing: border-box;
 }
 
 .login-card__logo-image {
-  width: 88px;
-  height: 88px;
+  width: 68px;
+  height: 68px;
   border-radius: 12px;
   background: #ffffff;
   display: grid;
@@ -61,7 +61,7 @@
 }
 
 .login-card__subtitle {
-  margin-top: 4px;
+  margin-top: 2px;
   font-size: 14px;
   line-height: 22px;
   color: #999999;
@@ -70,17 +70,17 @@
 }
 
 .login-form {
-  width: 350px;
+  width: 330px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 16px;
-  padding: 20px 0 16px;
+  gap: 10px;
+  padding: 14px 0 12px;
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .login-form .ant-form-item {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .login-form .ant-form-item-explain {
@@ -95,7 +95,7 @@
 
 .login-field input,
 .login-field select {
-  height: 40px;
+  height: 36px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 0 12px;
@@ -107,7 +107,7 @@
 
 .login-field .ant-input,
 .login-field .ant-input-affix-wrapper {
-  height: 40px;
+  height: 36px;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   padding: 0 12px;
@@ -131,6 +131,26 @@
   box-shadow: 0 0 0 2px rgba(183, 199, 220, 0.35);
 }
 
+.login-field--role .ant-segmented {
+  width: 100%;
+  padding: 3px;
+  background: #eef2f7;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.login-field--role .ant-segmented-item {
+  min-height: 28px;
+  border-radius: 6px;
+  color: #173d61;
+  font-weight: 500;
+}
+
+.login-field--role .ant-segmented-item-selected {
+  color: #173d61;
+  box-shadow: 0 3px 10px rgba(23, 61, 97, 0.12);
+}
+
 .login-field input:-webkit-autofill,
 .login-field input:-webkit-autofill:hover,
 .login-field input:-webkit-autofill:focus,
@@ -147,7 +167,7 @@
 }
 
 .login-button {
-  height: 40px;
+  height: 36px;
   border-radius: 8px;
   border: none;
   background: #8ba2c3;
@@ -164,7 +184,7 @@
 
 .login-register {
   display: inline-block;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   font-size: 12px;
   color: #8ba2c3;
   text-decoration: none;

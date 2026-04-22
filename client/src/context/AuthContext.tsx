@@ -12,6 +12,7 @@ import {
   registerRequest,
   type AuthRole,
   type AuthUser,
+  type RegisterRole,
 } from '../api/auth'
 
 export type Role = AuthRole
@@ -24,7 +25,7 @@ type AuthContextValue = {
   token: string | null
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string, name: string) => Promise<void>
+  register: (email: string, password: string, name: string, role: RegisterRole) => Promise<void>
   logout: () => void
   init: () => void
 }
@@ -64,8 +65,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 
   const register = useCallback(
-    async (email: string, password: string, name: string) => {
-      const { accessToken } = await registerRequest(email, password, name)
+    async (email: string, password: string, name: string, role: RegisterRole) => {
+      const { accessToken } = await registerRequest(email, password, name, role)
       const currentUser = await meRequest(accessToken)
       setSession(accessToken, currentUser)
     },
@@ -118,6 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext)
 

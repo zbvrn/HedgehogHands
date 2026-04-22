@@ -141,8 +141,8 @@ function ChildrenPage() {
   const data = childrenQuery.data ?? []
 
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+    <div className="page-view">
+      <div className="page-view__header">
         <Typography.Title level={2} style={{ margin: 0 }}>
           Дети
         </Typography.Title>
@@ -156,15 +156,21 @@ function ChildrenPage() {
         >
           Добавить
         </Button>
-      </Space>
+      </div>
 
-      {data.length ? (
-        <div style={{ marginTop: 16 }}>
-          <Table rowKey="id" columns={columns} dataSource={data} pagination={false} />
-        </div>
-      ) : (
-        <PageEmpty description="Пока нет детей. Добавьте первую карточку." />
-      )}
+      <div className="page-view__body">
+        {data.length ? (
+          <Table
+            rowKey="id"
+            columns={columns}
+            dataSource={data}
+            pagination={false}
+            size="small"
+          />
+        ) : (
+          <PageEmpty description="Пока нет детей. Добавьте первую карточку." />
+        )}
+      </div>
 
       <Modal
         open={isModalOpen}

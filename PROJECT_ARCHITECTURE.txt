@@ -1,0 +1,833 @@
+ПОДРОБНЫЙ РАЗБОР АРХИТЕКТУРЫ ПРОЕКТА "ЕЖОВЫЕ РУКИ"
+
+====================
+1. ОБЩАЯ ИДЕЯ СИСТЕМЫ
+====================
+
+Проект "Ежовые руки" - это веб-приложение для взаимодействия родителей и помощников.
+
+В системе есть три роли:
+- Родитель - добавляет карточки детей, ищет помощников по объявлениям, отправляет заявки и отслеживает их статусы.
+- Помощник - создает объявления о своих услугах, получает отклики родителей, берет заявки в работу, завершает или отклоняет их.
+- Администратор - управляет пользователями и категориями.
+
+Основной сценарий:
+1. Пользователь регистрируется как родитель или помощник.
+2. Помощник создает объявление с категорией, описанием и ценой.
+3. Родитель добавляет ребенка и ищет подходящее объявление.
+4. Родитель отправляет заявку на объявление.
+5. Помощник видит заявку в очереди и меняет ее статус:
+   - Новая
+   - В работе
+   - Выполнена
+   - Отклонена
+6. Администратор следит за пользователями и справочником категорий.
+
+Проект разделен на две независимые части:
+- client/ - фронтенд на React.
+- server/ - бэкенд на NestJS.
+
+
+====================
+2. СТЕК И ИНСТРУМЕНТЫ
+====================
+
+ФРОНТЕНД:
+- React 19 - библиотека для построения пользовательского интерфейса.
+- TypeScript - строгая типизация кода.
+- Vite 8 - быстрый dev-сервер и сборщик фронтенда.
+- React Router DOM 7 - маршрутизация между страницами.
+- TanStack React Query 5 - загрузка, кэширование и обновление серверных данных.
+- Ant Design 6 - UI-библиотека: формы, таблицы, кнопки, модальные окна, селекты, пагинация, теги.
+- ESLint - проверка качества кода.
+
+Что особенно важно на фронтенде:
+- Все запросы к серверу вынесены в client/src/api.
+- Авторизация хранится в AuthContext.
+- Роли проверяются через RequireAuth и RequireRole.
+- Большая часть интерфейса строится на Ant Design, а внешний вид дополнительно настраивается через ConfigProvider и CSS.
+
+БЭКЕНД:
+- NestJS 11 - серверный фреймворк поверх Node.js.
+- TypeScript - основной язык бэкенда.
+- TypeORM - ORM для работы с базой данных через сущности и репозитории.
+- PostgreSQL - база данных.
+- @nestjs/config - работа с переменными окружения из .env.
+- @nestjs/jwt - выпуск JWT-токенов.
+- Passport + passport-jwt - проверка JWT при защищенных запросах.
+- bcrypt - хэширование паролей.
+- class-validator + class-transformer - валидация входящих DTO.
+- @nestjs/swagger + swagger-ui-express - Swagger-документация API.
+- Jest - тестовый фреймворк.
+- ESLint + Prettier - проверка и форматирование кода.
+
+Что особенно важно на бэкенде:
+- Сервер принимает запросы с префиксом /api.
+- Глобальный ValidationPipe отбрасывает лишние поля и возвращает ProblemDetails-ошибки.
+- JWT используется для авторизации пользователя и определения его роли.
+- Ролевая защита строится на RolesGuard и декораторе @Roles.
+- База данных описана через TypeORM entity-классы.
+- Миграции лежат в server/src/migrations и применяются автоматически при старте.
+
+
+====================
+3. КОРЕНЬ ПРОЕКТА
+====================
+
+Основные элементы корня:
+- client/ - фронтенд-приложение.
+- server/ - серверное приложение.
+- PROJECT_ARCHITECTURE.txt - этот файл с разбором проекта.
+- .git/ - история изменений проекта.
+
+На практике разработка обычно идет так:
+1. Запускается сервер:
+   cd server
+   npm.cmd run start:dev
+
+2. Запускается клиент:
+   cd client
+   npm.cmd run dev
+
+3. Клиент открывается в браузере на Vite-порту, обычно:
+   http://localhost:5173
+   или
+   http://127.0.0.1:5173
+
+4. Клиент отправляет HTTP-запросы на сервер:
+   http://localhost:3000/api/...
+
+
+====================
+4. ФРОНТЕНД: СТРУКТУРА CLIENT
+====================
+
+client/package.json
+- Описывает зависимости фронтенда.
+- Главные команды:
+  - npm.cmd run dev - запуск Vite dev-сервера.
+  - npm.cmd run build - TypeScript-проверка и production-сборка.
+  - npm.cmd run lint - проверка ESLint.
+
+client/vite.config.ts
+- Конфигурация Vite.
+- Сейчас минимальная: подключен React-плагин.
+
+client/src/main.tsx
+- Точка входа фронтенда.
+- Здесь создается React root.
+- Подключается QueryClientProvider для React Query.
+- Подключается ConfigProvider Ant Design с темой проекта.
+- Подключается AuthProvider.
+- Подключается ErrorBoundary.
+- После этого рендерится App.
+
+client/src/App.tsx
+- Главный файл маршрутизации.
+- Описывает публичные и защищенные маршруты.
+- Публичные страницы:
+  - /login
+  - /register
+- Защищенная зона обернута в RequireAuth и AppLayout.
+- Ролевые зоны:
+  - parent - страницы родителя.
+  - helper - страницы помощника.
+  - admin - страницы администратора.
+- Общая страница деталей заявки:
+  - /requests/:id
+
+client/src/index.css
+- Глобальные CSS-переменные и базовые стили.
+
+
+====================
+5. ФРОНТЕНД: API-СЛОЙ
+====================
+
+Папка client/src/api содержит функции, которые общаются с сервером.
+Это важная архитектурная граница: страницы не должны вручную собирать fetch-запросы.
+
+client/src/api/http.ts
+- Базовая обертка над fetch.
+- Подставляет Content-Type: application/json.
+- Использует API_BASE:
+  - import.meta.env.VITE_API_BASE
+  - или http://localhost:3000 по умолчанию.
+- Обрабатывает сетевые ошибки.
+- Преобразует ProblemDetails-ответы сервера в ApiRequestError.
+
+client/src/api/auth.ts
+- loginRequest - вход.
+- registerRequest - регистрация.
+- meRequest - получение текущего пользователя по JWT.
+- Описывает AuthRole, RegisterRole, AuthUser.
+
+client/src/api/users.ts
+- Методы администратора для пользователей:
+  - getParents
+  - getHelpers
+  - updateUserRole
+
+client/src/api/categories.ts
+- Работа с категориями:
+  - получение списка
+  - создание
+  - обновление
+  - включение/отключение
+  - удаление
+
+client/src/api/children.ts
+- Работа с детьми родителя:
+  - getChildren
+  - getChildById
+  - createChild
+  - updateChild
+  - deleteChild
+
+client/src/api/announcements.ts
+- Работа с объявлениями помощников:
+  - getAnnouncements
+  - getMyAnnouncements
+  - getAnnouncementById
+  - createAnnouncement
+  - updateAnnouncement
+  - deleteAnnouncement
+- Также содержит общий тип PaginatedResponse<T>.
+
+client/src/api/requests.ts
+- Работа с заявками:
+  - getRequests
+  - getRequestById
+  - createRequest
+  - changeRequestStatus
+  - rejectRequest
+- Описывает RequestStatus и RequestItem.
+
+
+====================
+6. ФРОНТЕНД: АВТОРИЗАЦИЯ И РОЛИ
+====================
+
+client/src/context/AuthContext.tsx
+- Центральное место авторизации на фронтенде.
+- Хранит:
+  - user
+  - role
+  - token
+  - isAuthenticated
+- Сохраняет JWT в localStorage.
+- Дает методы:
+  - login
+  - register
+  - logout
+  - init
+- После login/register делает meRequest, чтобы получить актуального пользователя и роль.
+
+client/src/components/RequireAuth.tsx
+- Защищает страницы от неавторизованных пользователей.
+- Если токена нет, пользователь отправляется на /login.
+
+client/src/components/RequireRole.tsx
+- Проверяет, имеет ли текущий пользователь нужную роль.
+- Если роль не подходит, отображается ForbiddenPage.
+
+client/src/components/Sidebar.tsx
+- Левое меню приложения.
+- Набор пунктов зависит от роли:
+  - parent: Дети, Поиск помощника, Заявки.
+  - helper: Мои объявления, Новые отклики, В работе, Выполненные.
+  - admin: Родители, Помощники, Категории.
+
+client/src/components/AppLayout.tsx
+- Общий каркас внутренних страниц:
+  - Sidebar
+  - main content через Outlet.
+
+
+====================
+7. ФРОНТЕНД: СТРАНИЦЫ
+====================
+
+Публичные страницы:
+- client/src/pages/public/LoginPage.tsx
+  - форма входа.
+- client/src/pages/public/RegisterPage.tsx
+  - форма регистрации.
+  - пользователь выбирает статус: родитель или помощник.
+- client/src/pages/public/LoginPage.css
+  - общий стиль входа и регистрации.
+
+Страницы родителя:
+- client/src/pages/parent/ChildrenPage.tsx
+  - список детей.
+  - создание, редактирование, удаление карточки ребенка.
+
+- client/src/pages/parent/SearchPage.tsx
+  - поиск объявлений помощников.
+  - фильтрация по категории.
+  - поиск по названию/описанию.
+  - отправка заявки на объявление.
+
+- client/src/pages/parent/RequestsPage.tsx
+  - список заявок родителя.
+  - фильтр по статусу.
+  - отображение номера заявки относительно родителя.
+
+Страницы помощника:
+- client/src/pages/helper/MyAnnouncementsPage.tsx
+  - объявления текущего помощника.
+  - создание, редактирование, удаление.
+  - включение/отключение активности объявления.
+
+- client/src/pages/helper/NewRequestsPage.tsx
+  - новые отклики на объявления помощника.
+  - можно взять заявку в работу или отклонить.
+
+- client/src/pages/helper/InProgressRequestsPage.tsx
+  - заявки в работе.
+  - можно завершить заявку.
+
+- client/src/pages/helper/ResolvedRequestsPage.tsx
+  - выполненные заявки.
+
+Страницы администратора:
+- client/src/pages/admin/ParentsPage.tsx
+  - список родителей.
+  - смена роли.
+  - отображение общего количества.
+
+- client/src/pages/admin/HelpersPage.tsx
+  - список помощников.
+  - смена роли.
+  - отображение общего количества.
+
+- client/src/pages/admin/CategoriesPage.tsx
+  - справочник категорий.
+  - создание, редактирование, удаление, включение/отключение.
+
+Общие страницы:
+- client/src/pages/RequestDetailPage.tsx
+  - детали заявки.
+  - для родителя показывает понятный номер заявки.
+  - для помощника не показывает глобальный id из базы.
+
+- client/src/pages/TicketDetailPage.tsx
+- client/src/pages/parent/CreateTicketPage.tsx
+- client/src/pages/parent/TicketsListPage.tsx
+  - заготовки/остаточные страницы тикетов, почти не участвуют в основном сценарии заявок.
+
+
+====================
+8. ФРОНТЕНД: КОМПОНЕНТЫ UI
+====================
+
+client/src/components/PageLoading.tsx
+- Единое состояние загрузки.
+
+client/src/components/PageError.tsx
+- Единое состояние ошибки.
+
+client/src/components/PageEmpty.tsx
+- Единое состояние пустого списка.
+
+client/src/components/ForbiddenPage.tsx
+- Страница 403.
+
+client/src/components/PageNotFound.tsx
+- Страница 404.
+
+client/src/components/ErrorBoundary.tsx
+- Ловит неожиданные ошибки React-дерева.
+
+client/src/components/requests/RequestsTable.tsx
+- Общая таблица заявок для страниц помощника.
+- Использует Ant Design Table.
+- В зависимости от режима показывает нужные действия.
+
+client/src/components/requests/RejectRequestModal.tsx
+- Модальное окно указания причины отклонения заявки.
+
+client/src/components/requests/requestStatus.tsx
+- Централизованные русские подписи статусов.
+- Рендер Tag для статуса заявки.
+
+client/src/components/requests/HelperRequestTabs.tsx
+- Вкладки/сегменты между очередями помощника:
+  - Новые
+  - В работе
+  - Выполненные
+
+client/src/components/RoleLabels.ts
+- Русские подписи ролей.
+
+
+====================
+9. БЭКЕНД: СТРУКТУРА SERVER
+====================
+
+server/package.json
+- Зависимости и команды сервера.
+- Главные команды:
+  - npm.cmd run start:dev - запуск Nest в watch-режиме.
+  - npm.cmd run start - обычный запуск.
+  - npm.cmd run build - сборка в dist.
+  - npm.cmd run start:prod - запуск dist/main.
+  - npm.cmd run test - тесты.
+  - npm.cmd run lint - ESLint.
+
+server/src/main.ts
+- Точка входа сервера.
+- Создает Nest-приложение.
+- Проверяет/создает базу данных через ensureDatabaseExists.
+- Включает CORS для фронтенда.
+- Устанавливает глобальный префикс /api.
+- Подключает Swagger.
+- Подключает глобальный ValidationPipe:
+  - whitelist: true - оставляет только поля из DTO.
+  - forbidNonWhitelisted: true - запрещает лишние поля.
+  - transform: true - преобразует типы.
+- Подключает ProblemDetailsFilter.
+- Запускает сервер на process.env.PORT или 3000.
+
+server/src/app.module.ts
+- Главный модуль NestJS.
+- Подключает ConfigModule.
+- Настраивает TypeORM.
+- Подключает функциональные модули:
+  - UsersModule
+  - AuthModule
+  - CategoriesModule
+  - ChildrenModule
+  - AnnouncementsModule
+  - RequestsModule
+
+server/src/app.controller.ts
+- Содержит health-check endpoint /health.
+
+server/src/app.service.ts
+- Сервис для базового health/status функционала.
+
+
+====================
+10. БЭКЕНД: МОДУЛИ
+====================
+
+AuthModule - server/src/auth
+- Отвечает за регистрацию, вход, JWT и защиту запросов.
+
+Главные файлы:
+- auth.controller.ts
+  - POST /api/auth/register
+  - POST /api/auth/login
+  - GET /api/auth/me
+
+- auth.service.ts
+  - хэширует пароль через bcrypt.
+  - создает пользователя.
+  - проверяет пароль при входе.
+  - подписывает JWT.
+
+- dto/register.dto.ts
+  - email
+  - password
+  - name
+  - role parent/helper
+
+- dto/login.dto.ts
+  - email
+  - password
+
+- jwt.strategy.ts
+  - извлекает и проверяет JWT.
+
+- jwt-auth.guard.ts
+  - Guard для защищенных запросов.
+
+- roles.decorator.ts
+  - декоратор @Roles(...).
+
+- roles.guard.ts
+  - проверка роли пользователя.
+
+
+UsersModule - server/src/users
+- Управление пользователями.
+
+Главные файлы:
+- user.entity.ts
+  - Entity users.
+  - Поля: id, email, passwordHash, role, name.
+  - Enum UserRole: parent, helper, admin.
+
+- users.controller.ts
+  - GET /api/users/parents
+  - GET /api/users/helpers
+  - PUT /api/users/:id/role
+
+- users.service.ts
+  - поиск пользователя.
+  - создание пользователя.
+  - списки родителей/помощников.
+  - смена роли.
+
+- users.mapper.ts
+  - преобразует User entity в UserResponseDto.
+
+- dto/user-response.dto.ts
+  - DTO ответа пользователя.
+
+- dto/update-user-role.dto.ts
+  - DTO смены роли.
+
+
+CategoriesModule - server/src/categories
+- Справочник категорий объявлений.
+
+Главные файлы:
+- category.entity.ts
+  - Entity categories.
+  - Поля: id, name, isActive.
+
+- categories.controller.ts
+  - REST endpoints категорий.
+
+- categories.service.ts
+  - бизнес-логика категорий.
+  - проверка уникальности.
+  - активность/неактивность.
+
+- category.seed.ts
+  - стартовые категории.
+
+- dto/*
+  - DTO создания, обновления, ответа, смены активности.
+
+
+ChildrenModule - server/src/children
+- Карточки детей родителя.
+
+Главные файлы:
+- child.entity.ts
+  - Entity children.
+  - Связь с родителем.
+  - Поля ребенка: имя, возраст, особенности.
+
+- children.controller.ts
+  - endpoints детей.
+
+- children.service.ts
+  - создание/чтение/обновление/удаление.
+  - проверка доступа: родитель работает только со своими детьми.
+
+- children.mapper.ts
+  - преобразование entity в DTO.
+
+- dto/*
+  - DTO создания, обновления, ответа.
+
+
+AnnouncementsModule - server/src/announcements
+- Объявления помощников.
+
+Главные файлы:
+- announcement.entity.ts
+  - Entity announcements.
+  - Связи:
+    - helper -> User.
+    - category -> Category.
+  - Поля: title, description, price, isActive, createdAt, updatedAt.
+
+- announcements.controller.ts
+  - endpoints объявлений.
+
+- announcements.service.ts
+  - список объявлений.
+  - объявления текущего помощника.
+  - создание/обновление/удаление.
+  - фильтрация по категории и поиску.
+
+- announcements.mapper.ts
+  - преобразование entity в DTO.
+
+- dto/*
+  - DTO запроса списка, создания, обновления, ответа.
+
+
+RequestsModule - server/src/requests
+- Заявки родителей на объявления помощников.
+
+Главные файлы:
+- request.entity.ts
+  - Entity requests.
+  - Связи:
+    - announcement
+    - parent
+    - child
+  - Поля:
+    - id
+    - status
+    - message
+    - rejectionReason
+    - parentRequestNumber
+    - createdAt
+
+- request-status.enum.ts
+  - New
+  - InProgress
+  - Resolved
+  - Rejected
+
+- requests.controller.ts
+  - endpoints заявок.
+
+- requests.service.ts
+  - бизнес-логика заявок.
+  - создание заявки родителем.
+  - получение списков с пагинацией.
+  - получение деталей.
+  - смена статуса.
+  - отклонение.
+  - проверки доступа по ролям.
+
+- requests.mapper.ts
+  - преобразование RequestEntity в RequestResponseDto.
+
+- dto/*
+  - DTO создания заявки.
+  - DTO смены статуса.
+  - DTO отклонения.
+  - DTO запроса списка.
+  - DTO ответа.
+
+
+Common - server/src/common
+- Общие элементы сервера.
+
+server/src/common/dto/paginated-response.dto.ts
+- Общий формат ответа с пагинацией:
+  - items
+  - total
+  - page
+  - limit
+  - totalPages
+
+server/src/common/filters/problem-details.filter.ts
+- Единый формат ошибок ProblemDetails.
+- Делает ответы ошибок более предсказуемыми для клиента.
+
+
+Migrations - server/src/migrations
+- Миграции TypeORM.
+- Создают и изменяют таблицы.
+- Содержат сидинг начальных данных.
+
+Важные миграции:
+- seed-users - стартовые пользователи.
+- add-categories - категории.
+- add-children - дети.
+- add-announcements - объявления.
+- add-requests - заявки.
+- add-parent-request-number - номер заявки относительно родителя.
+
+
+====================
+11. СВЯЗЬ ФРОНТЕНДА И БЭКЕНДА
+====================
+
+Типичный путь данных:
+1. Пользователь нажимает кнопку на странице React.
+2. Страница вызывает функцию из client/src/api.
+3. api-функция использует apiRequest из http.ts.
+4. Запрос уходит на server: http://localhost:3000/api/...
+5. Nest Controller принимает HTTP-запрос.
+6. ValidationPipe проверяет DTO.
+7. Controller вызывает Service.
+8. Service работает с TypeORM Repository и базой данных.
+9. Mapper превращает Entity в DTO ответа.
+10. Клиент получает JSON.
+11. React Query обновляет кэш.
+12. Компонент перерисовывается.
+
+Пример регистрации:
+- client/src/pages/public/RegisterPage.tsx
+- client/src/context/AuthContext.tsx
+- client/src/api/auth.ts -> registerRequest
+- server/src/auth/auth.controller.ts -> register
+- server/src/auth/dto/register.dto.ts
+- server/src/auth/auth.service.ts
+- server/src/users/users.service.ts
+- server/src/users/user.entity.ts
+
+Пример создания заявки:
+- client/src/pages/parent/SearchPage.tsx
+- client/src/api/requests.ts -> createRequest
+- server/src/requests/requests.controller.ts
+- server/src/requests/dto/create-request.dto.ts
+- server/src/requests/requests.service.ts
+- server/src/requests/request.entity.ts
+- server/src/requests/requests.mapper.ts
+
+Пример смены статуса заявки:
+- client/src/components/requests/RequestsTable.tsx
+- client/src/pages/helper/NewRequestsPage.tsx
+- client/src/pages/helper/InProgressRequestsPage.tsx
+- client/src/api/requests.ts -> changeRequestStatus
+- server/src/requests/requests.controller.ts
+- server/src/requests/dto/change-status.dto.ts
+- server/src/requests/requests.service.ts
+
+
+====================
+12. ГЛАВНЫЕ ФАЙЛЫ, КОТОРЫЕ НУЖНО СМОТРЕТЬ В ПЕРВУЮ ОЧЕРЕДЬ
+====================
+
+Если нужно понять запуск проекта:
+1. client/package.json
+2. server/package.json
+3. server/src/main.ts
+4. server/src/app.module.ts
+5. client/src/main.tsx
+6. client/src/App.tsx
+
+Если нужно понять авторизацию:
+1. client/src/context/AuthContext.tsx
+2. client/src/api/auth.ts
+3. client/src/components/RequireAuth.tsx
+4. client/src/components/RequireRole.tsx
+5. server/src/auth/auth.controller.ts
+6. server/src/auth/auth.service.ts
+7. server/src/auth/jwt.strategy.ts
+8. server/src/auth/roles.guard.ts
+9. server/src/users/user.entity.ts
+
+Если нужно понять роли и пользователей:
+1. server/src/users/user.entity.ts
+2. server/src/users/users.controller.ts
+3. server/src/users/users.service.ts
+4. client/src/api/users.ts
+5. client/src/pages/admin/ParentsPage.tsx
+6. client/src/pages/admin/HelpersPage.tsx
+
+Если нужно понять объявления:
+1. server/src/announcements/announcement.entity.ts
+2. server/src/announcements/announcements.controller.ts
+3. server/src/announcements/announcements.service.ts
+4. client/src/api/announcements.ts
+5. client/src/pages/helper/MyAnnouncementsPage.tsx
+6. client/src/pages/parent/SearchPage.tsx
+
+Если нужно понять заявки:
+1. server/src/requests/request.entity.ts
+2. server/src/requests/request-status.enum.ts
+3. server/src/requests/requests.controller.ts
+4. server/src/requests/requests.service.ts
+5. client/src/api/requests.ts
+6. client/src/components/requests/RequestsTable.tsx
+7. client/src/pages/parent/RequestsPage.tsx
+8. client/src/pages/helper/NewRequestsPage.tsx
+9. client/src/pages/helper/InProgressRequestsPage.tsx
+10. client/src/pages/helper/ResolvedRequestsPage.tsx
+11. client/src/pages/RequestDetailPage.tsx
+
+Если нужно понять детей:
+1. server/src/children/child.entity.ts
+2. server/src/children/children.controller.ts
+3. server/src/children/children.service.ts
+4. client/src/api/children.ts
+5. client/src/pages/parent/ChildrenPage.tsx
+
+Если нужно понять категории:
+1. server/src/categories/category.entity.ts
+2. server/src/categories/categories.controller.ts
+3. server/src/categories/categories.service.ts
+4. client/src/api/categories.ts
+5. client/src/pages/admin/CategoriesPage.tsx
+
+Если нужно понять внешний вид:
+1. client/src/main.tsx - тема Ant Design через ConfigProvider.
+2. client/src/components/AppLayout.css - общий вид внутренних страниц.
+3. client/src/components/Sidebar.css - боковое меню.
+4. client/src/pages/public/LoginPage.css - вход и регистрация.
+5. client/src/components/requests/requestStatus.tsx - цвета и подписи статусов.
+
+
+====================
+13. КЛЮЧЕВЫЕ АРХИТЕКТУРНЫЕ ПРАВИЛА ПРОЕКТА
+====================
+
+1. Страницы фронтенда не должны напрямую писать fetch.
+   Для запросов есть client/src/api.
+
+2. Бизнес-логика должна жить на сервере в service-классах.
+   Controller должен принимать запрос, валидировать DTO и вызывать сервис.
+
+3. DTO отделяют внешний API от внутренних Entity.
+   Клиент не обязан знать все поля таблиц базы данных.
+
+4. Mapper нужен для преобразования Entity -> ResponseDto.
+   Это помогает не отдавать лишние данные, например passwordHash.
+
+5. Проверка ролей должна быть на сервере.
+   Фронтенд может скрыть меню, но настоящая защита находится в Guards.
+
+6. Все ошибки сервера желательно возвращать в едином формате ProblemDetails.
+   Клиент уже умеет читать title/detail.
+
+7. Пагинация должна быть серверной там, где список потенциально большой.
+   На фронтенде отображается только текущая страница данных.
+
+8. UI строится на Ant Design.
+   Кастомный CSS используется для темы, компоновки и аккуратной стилизации, но базовые элементы остаются компонентами библиотеки.
+
+
+====================
+14. КОРОТКАЯ КАРТА ПРОЕКТА
+====================
+
+client/src/main.tsx
+  -> подключает тему, React Query, AuthProvider, App
+
+client/src/App.tsx
+  -> маршруты и ролевые зоны
+
+client/src/context/AuthContext.tsx
+  -> токен, пользователь, роль, login/register/logout
+
+client/src/api/*
+  -> HTTP-клиент и методы запросов к серверу
+
+client/src/pages/*
+  -> экраны приложения
+
+client/src/components/*
+  -> общий layout, sidebar, guards, таблицы, состояния страниц
+
+server/src/main.ts
+  -> запуск Nest, CORS, ValidationPipe, Swagger, /api
+
+server/src/app.module.ts
+  -> подключение модулей и TypeORM
+
+server/src/auth
+  -> вход, регистрация, JWT, роли
+
+server/src/users
+  -> пользователи и админское управление ролями
+
+server/src/categories
+  -> категории объявлений
+
+server/src/children
+  -> дети родителя
+
+server/src/announcements
+  -> объявления помощников
+
+server/src/requests
+  -> заявки и их статусы
+
+server/src/common
+  -> общие DTO и фильтры ошибок
+
+server/src/migrations
+  -> структура БД и стартовые данные

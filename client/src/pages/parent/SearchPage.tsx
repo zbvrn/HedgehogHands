@@ -95,12 +95,12 @@ function SearchPage() {
   const data = announcementsQuery.data
   if (!data || !data.items.length) {
     return (
-      <div style={{ padding: 24, textAlign: 'left' }}>
-        <Typography.Title level={2} style={{ margin: 0 }}>
-          Поиск помощника
-        </Typography.Title>
-        <div style={{ marginTop: 16 }}>
-          <Space wrap>
+      <div className="page-view">
+        <div className="page-view__header">
+          <Typography.Title level={2} style={{ margin: 0 }}>
+            Поиск помощника
+          </Typography.Title>
+          <div className="page-view__toolbar">
             <Select
               allowClear
               placeholder="Категория"
@@ -122,9 +122,11 @@ function SearchPage() {
               }}
               allowClear
             />
-          </Space>
+          </div>
         </div>
-        <PageEmpty description="Объявлений не найдено" />
+        <div className="page-view__body">
+          <PageEmpty description="Объявлений не найдено" />
+        </div>
       </div>
     )
   }
@@ -135,13 +137,12 @@ function SearchPage() {
   }))
 
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      <Typography.Title level={2} style={{ margin: 0 }}>
-        Поиск помощника
-      </Typography.Title>
-
-      <div style={{ marginTop: 16 }}>
-        <Space wrap>
+    <div className="page-view">
+      <div className="page-view__header">
+        <Typography.Title level={2} style={{ margin: 0 }}>
+          Поиск помощника
+        </Typography.Title>
+        <div className="page-view__toolbar">
           <Select
             allowClear
             placeholder="Категория"
@@ -163,10 +164,10 @@ function SearchPage() {
             }}
             allowClear
           />
-        </Space>
+        </div>
       </div>
 
-      <div style={{ marginTop: 16, display: 'grid', gap: 12 }}>
+      <div className="page-view__body page-view__body--cards">
         {data.items.map((item) => (
           <Card
             key={item.id}
@@ -205,7 +206,7 @@ function SearchPage() {
         ))}
       </div>
 
-      <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+      <div className="page-view__footer">
         <Pagination
           current={page}
           total={data.total}

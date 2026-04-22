@@ -1,8 +1,9 @@
-import { Button, Space, Table, Tag } from 'antd'
+import { Button, Space, Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import type { RequestItem, RequestStatus } from '../../api/requests'
+import { renderRequestStatusTag } from './requestStatus'
 
 type Mode = 'new' | 'inProgress' | 'resolved'
 
@@ -14,13 +15,6 @@ type Props = {
   onReject?: (id: number) => void
 }
 
-const statusTag = (status: RequestStatus) => {
-  if (status === 'New') return <Tag color="blue">New</Tag>
-  if (status === 'InProgress') return <Tag color="gold">InProgress</Tag>
-  if (status === 'Resolved') return <Tag color="green">Resolved</Tag>
-  return <Tag color="red">Rejected</Tag>
-}
-
 function RequestsTable({ requests, mode, isLoading, onStatusChange, onReject }: Props) {
   const columns: ColumnsType<RequestItem> = useMemo(() => {
     const base: ColumnsType<RequestItem> = [
@@ -28,8 +22,15 @@ function RequestsTable({ requests, mode, isLoading, onStatusChange, onReject }: 
         title: 'Дата',
         dataIndex: 'createdAt',
         key: 'createdAt',
-        width: 200,
-        render: (value: string) => new Date(value).toLocaleString(),
+        width: 170,
+        render: (value: string) =>
+          new Date(value).toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
       },
       {
         title: 'Объявление',
@@ -41,22 +42,22 @@ function RequestsTable({ requests, mode, isLoading, onStatusChange, onReject }: 
         title: 'Родитель',
         dataIndex: ['parent', 'name'],
         key: 'parent',
-        width: 240,
+        width: 210,
         render: (_, record) => `${record.parent.name} (${record.parent.email})`,
       },
       {
         title: 'Ребёнок',
         dataIndex: ['child', 'name'],
         key: 'child',
-        width: 180,
+        width: 150,
         render: (_, record) => `${record.child.name} (${record.child.age})`,
       },
       {
         title: 'Статус',
         dataIndex: 'status',
         key: 'status',
-        width: 160,
-        render: (value: RequestStatus) => statusTag(value),
+        width: 130,
+        render: (value: RequestStatus) => renderRequestStatusTag(value),
       },
     ]
 
@@ -65,7 +66,7 @@ function RequestsTable({ requests, mode, isLoading, onStatusChange, onReject }: 
     base.push({
       title: 'Действия',
       key: 'actions',
-      width: 220,
+      width: 210,
       render: (_, record) => {
         if (mode === 'new') {
           return (
@@ -100,9 +101,9 @@ function RequestsTable({ requests, mode, isLoading, onStatusChange, onReject }: 
       dataSource={requests}
       loading={isLoading}
       pagination={false}
+      size="small"
     />
   )
 }
 
 export default RequestsTable
-

@@ -1,16 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Modal, Pagination, Space, Typography, message } from 'antd'
-import { useMemo, useState } from 'react'
+import { Modal, Pagination, Typography, message } from 'antd'
+import { useState } from 'react'
 import { ApiRequestError } from '../../api/http'
 import {
   changeRequestStatus,
   getRequests,
   rejectRequest,
-  type RequestItem,
 } from '../../api/requests'
 import PageEmpty from '../../components/PageEmpty'
 import PageError from '../../components/PageError'
 import PageLoading from '../../components/PageLoading'
+import HelperRequestTabs from '../../components/requests/HelperRequestTabs'
 import RequestsTable from '../../components/requests/RequestsTable'
 import RejectRequestModal from '../../components/requests/RejectRequestModal'
 import { useAuth } from '../../context/AuthContext'
@@ -33,8 +33,8 @@ function NewRequestsPage() {
   const statusMutation = useMutation({
     mutationFn: (args: { id: number; status: 'InProgress' }) =>
       changeRequestStatus(token!, args.id, args.status),
-    onSuccess: async (updated: RequestItem) => {
-      message.success(`Заявка #${updated.id} взята в работу`)
+    onSuccess: async () => {
+      message.success('Заявка взята в работу')
       await queryClient.invalidateQueries({ queryKey: ['requests'] })
     },
     onError: (err) => {
@@ -45,8 +45,8 @@ function NewRequestsPage() {
 
   const rejectMutation = useMutation({
     mutationFn: (args: { id: number; reason: string }) => rejectRequest(token!, args.id, args.reason),
-    onSuccess: async (updated: RequestItem) => {
-      message.success(`Заявка #${updated.id} отклонена`)
+    onSuccess: async () => {
+      message.success('Заявка отклонена')
       setRejectOpen(false)
       setRejectId(null)
       await queryClient.invalidateQueries({ queryKey: ['requests'] })
@@ -58,17 +58,6 @@ function NewRequestsPage() {
   })
 
   const isBusy = statusMutation.isPending || rejectMutation.isPending
-
-  const pageTitle = useMemo(
-    () => (
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-        <Typography.Title level={2} style={{ margin: 0 }}>
-          Новые отклики
-        </Typography.Title>
-      </Space>
-    ),
-    [],
-  )
 
   if (requestsQuery.isLoading) return <PageLoading />
   if (requestsQuery.error) {
@@ -82,15 +71,20 @@ function NewRequestsPage() {
   const items = data?.items ?? []
 
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      {pageTitle}
+    <div className="page-view">
+      <div className="page-view__header">
+        <Typography.Title level={2} style={{ margin: 0 }}>
+          Новые отклики
+        </Typography.Title>
+        <HelperRequestTabs />
+      </div>
 
       {!items.length ? (
-        <div style={{ marginTop: 16 }}>
+        <div className="page-view__body">
           <PageEmpty description="Новых откликов пока нет" />
         </div>
       ) : (
-        <div style={{ marginTop: 16 }}>
+        <div className="page-view__body">
           <RequestsTable
             mode="new"
             requests={items}
@@ -113,18 +107,20 @@ function NewRequestsPage() {
               setRejectOpen(true)
             }}
           />
-
-          <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-            <Pagination
-              current={page}
-              total={data?.total ?? 0}
-              pageSize={limit}
-              onChange={(nextPage) => setPage(nextPage)}
-              showSizeChanger={false}
-            />
-          </div>
         </div>
       )}
+
+      {data?.total ? (
+        <div className="page-view__footer">
+          <Pagination
+            current={page}
+            total={data.total}
+            pageSize={limit}
+            onChange={(nextPage) => setPage(nextPage)}
+            showSizeChanger={false}
+          />
+        </div>
+      ) : null}
 
       <RejectRequestModal
         open={rejectOpen}
@@ -144,4 +140,3 @@ function NewRequestsPage() {
 }
 
 export default NewRequestsPage
-

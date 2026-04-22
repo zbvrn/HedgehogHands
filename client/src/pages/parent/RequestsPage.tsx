@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Pagination, Select, Space, Table, Tag, Typography } from 'antd'
+import { Pagination, Select, Table, Typography } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import type { ColumnsType } from 'antd/es/table'
 import { Link } from 'react-router-dom'
@@ -8,21 +8,11 @@ import { getRequests, type RequestItem, type RequestStatus } from '../../api/req
 import PageEmpty from '../../components/PageEmpty'
 import PageError from '../../components/PageError'
 import PageLoading from '../../components/PageLoading'
+import {
+  renderRequestStatusTag,
+  requestStatusOptions,
+} from '../../components/requests/requestStatus'
 import { useAuth } from '../../context/AuthContext'
-
-const statusOptions: Array<{ value: RequestStatus; label: string }> = [
-  { value: 'New', label: 'Новые' },
-  { value: 'InProgress', label: 'В работе' },
-  { value: 'Resolved', label: 'Выполненные' },
-  { value: 'Rejected', label: 'Отклонённые' },
-]
-
-const statusTag = (status: RequestStatus) => {
-  if (status === 'New') return <Tag color="blue">New</Tag>
-  if (status === 'InProgress') return <Tag color="gold">InProgress</Tag>
-  if (status === 'Resolved') return <Tag color="green">Resolved</Tag>
-  return <Tag color="red">Rejected</Tag>
-}
 
 function RequestsPage() {
   const { token } = useAuth()
@@ -64,7 +54,7 @@ function RequestsPage() {
         dataIndex: 'status',
         key: 'status',
         width: 160,
-        render: (value: RequestStatus) => statusTag(value),
+        render: (value: RequestStatus) => renderRequestStatusTag(value),
       },
     ],
     [],
@@ -80,40 +70,16 @@ function RequestsPage() {
   const data = requestsQuery.data
   const items = data?.items ?? []
 
-  if (!items.length) {
-    return (
-      <div style={{ padding: 24, textAlign: 'left' }}>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={2} style={{ margin: 0 }}>
-            Заявки
-          </Typography.Title>
-          <Select
-            allowClear
-            placeholder="Статус"
-            options={statusOptions}
-            style={{ width: 240 }}
-            value={status}
-            onChange={(value) => {
-              setPage(1)
-              setStatus(value)
-            }}
-          />
-        </Space>
-        <PageEmpty description="Заявок пока нет" />
-      </div>
-    )
-  }
-
   return (
-    <div style={{ padding: 24, textAlign: 'left' }}>
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+    <div className="page-view">
+      <div className="page-view__header">
         <Typography.Title level={2} style={{ margin: 0 }}>
           Заявки
         </Typography.Title>
         <Select
           allowClear
           placeholder="Статус"
-          options={statusOptions}
+          options={requestStatusOptions}
           style={{ width: 240 }}
           value={status}
           onChange={(value) => {
@@ -121,24 +87,35 @@ function RequestsPage() {
             setStatus(value)
           }}
         />
-      </Space>
-
-      <div style={{ marginTop: 16 }}>
-        <Table rowKey="id" columns={columns} dataSource={items} pagination={false} />
       </div>
 
-      <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-        <Pagination
-          current={page}
-          total={data?.total ?? 0}
-          pageSize={limit}
-          onChange={(nextPage) => setPage(nextPage)}
-          showSizeChanger={false}
-        />
+      <div className="page-view__body">
+        {items.length ? (
+          <Table
+            rowKey="id"
+            columns={columns}
+            dataSource={items}
+            pagination={false}
+            size="small"
+          />
+        ) : (
+          <PageEmpty description="Заявок пока нет" />
+        )}
       </div>
+
+      {data?.total ? (
+        <div className="page-view__footer">
+          <Pagination
+            current={page}
+            total={data.total}
+            pageSize={limit}
+            onChange={(nextPage) => setPage(nextPage)}
+            showSizeChanger={false}
+          />
+        </div>
+      ) : null}
     </div>
   )
 }
 
 export default RequestsPage
-
