@@ -235,6 +235,7 @@ function MyAnnouncementsPage() {
       ) : null}
 
       <Modal
+        centered
         open={isModalOpen}
         title={editing ? 'Редактирование объявления' : 'Новое объявление'}
         okText={editing ? 'Сохранить' : 'Создать'}

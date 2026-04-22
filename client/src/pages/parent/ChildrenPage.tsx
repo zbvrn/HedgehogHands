@@ -173,6 +173,7 @@ function ChildrenPage() {
       </div>
 
       <Modal
+        centered
         open={isModalOpen}
         title={editing ? 'Редактирование ребёнка' : 'Новый ребёнок'}
         okText={editing ? 'Сохранить' : 'Создать'}

@@ -23,6 +23,9 @@ createRoot(document.getElementById('root')!).render(
               fontFamily: "'Segoe UI', system-ui, sans-serif",
             },
             components: {
+              Modal: {
+                contentBg: '#ffffff',
+              },
               Button: {
                 primaryShadow: 'none',
               },

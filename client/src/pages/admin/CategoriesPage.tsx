@@ -190,6 +190,7 @@ function CategoriesPage() {
       </div>
 
       <Modal
+        centered
         open={isModalOpen}
         title={editing ? 'Редактирование категории' : 'Новая категория'}
         okText={editing ? 'Сохранить' : 'Создать'}

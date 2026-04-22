@@ -23,6 +23,7 @@ export class SeedUsers1760000000000 implements MigrationInterface {
         VALUES
           ('parent@example.com', $1, 'parent', 'Parent User'),
           ('helper@example.com', $1, 'helper', 'Helper User'),
+          ('helper2@example.com', $1, 'helper', 'Helper User 2'),
           ('admin@example.com', $1, 'admin', 'Admin User')
       `,
       [passwordHash],

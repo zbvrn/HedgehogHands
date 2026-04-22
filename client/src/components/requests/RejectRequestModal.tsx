@@ -19,6 +19,7 @@ function RejectRequestModal({ open, isLoading, onCancel, onSubmit }: Props) {
 
   return (
     <Modal
+      centered
       open={open}
       title="Отклонить заявку"
       okText="Отклонить"
@@ -54,4 +55,3 @@ function RejectRequestModal({ open, isLoading, onCancel, onSubmit }: Props) {
 }
 
 export default RejectRequestModal
-

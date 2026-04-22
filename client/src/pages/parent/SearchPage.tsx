@@ -217,6 +217,7 @@ function SearchPage() {
       </div>
 
       <Modal
+        centered
         open={isModalOpen}
         title="Отклик на объявление"
         okText="Отправить"

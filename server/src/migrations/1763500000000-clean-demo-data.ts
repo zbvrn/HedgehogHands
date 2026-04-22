@@ -1,39 +1,45 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
-type UserRow = { id: number; email: string };
-
-export class AddAnnouncements1763100000000 implements MigrationInterface {
-  name = 'AddAnnouncements1763100000000';
+export class CleanDemoData1763500000000 implements MigrationInterface {
+  name = 'CleanDemoData1763500000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const passwordHash = await bcrypt.hash('password123', 10);
+
+    await queryRunner.query(
+      `
+        INSERT INTO users (email, password_hash, role, name)
+        VALUES ('helper2@example.com', $1, 'helper', 'Helper User 2')
+        ON CONFLICT (email) DO NOTHING
+      `,
+      [passwordHash],
+    );
+
     await queryRunner.query(`
-      CREATE TABLE IF NOT EXISTS announcements (
-        id SERIAL PRIMARY KEY,
-        title TEXT NOT NULL,
-        description TEXT NOT NULL,
-        price INT,
-        category_id INT NOT NULL REFERENCES categories(id) ON DELETE RESTRICT,
-        helper_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        is_active BOOLEAN NOT NULL DEFAULT true,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
+      DO $$
+      BEGIN
+        IF to_regclass('public.requests') IS NOT NULL THEN
+          EXECUTE 'TRUNCATE TABLE requests RESTART IDENTITY';
+        END IF;
+        IF to_regclass('public.announcements') IS NOT NULL THEN
+          EXECUTE 'TRUNCATE TABLE announcements RESTART IDENTITY CASCADE';
+        END IF;
+      END $$;
     `);
 
     await queryRunner.query(
-      `CREATE INDEX IF NOT EXISTS idx_announcements_category_id ON announcements(category_id)`,
-    );
-    await queryRunner.query(
-      `CREATE INDEX IF NOT EXISTS idx_announcements_helper_id ON announcements(helper_id)`,
-    );
-    await queryRunner.query(
-      `CREATE INDEX IF NOT EXISTS idx_announcements_is_active ON announcements(is_active)`,
+      `
+        DELETE FROM users
+        WHERE email <> ALL($1::text[])
+      `,
+      [['parent@example.com', 'helper@example.com', 'helper2@example.com', 'admin@example.com']],
     );
 
     const helperRows = (await queryRunner.query(
       `SELECT id, email FROM users WHERE email = ANY($1::text[])`,
       [['helper@example.com', 'helper2@example.com']],
-    )) as UserRow[];
+    )) as Array<{ id: number; email: string }>;
     const helperIdByEmail = new Map(helperRows.map((row) => [row.email, row.id]));
 
     const categoryRows = (await queryRunner.query(
@@ -74,7 +80,7 @@ export class AddAnnouncements1763100000000 implements MigrationInterface {
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE IF EXISTS announcements`);
+  public async down(): Promise<void> {
+    // The deleted demo data should not be restored.
   }
 }
