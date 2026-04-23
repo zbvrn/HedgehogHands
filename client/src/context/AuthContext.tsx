@@ -19,7 +19,7 @@ export type Role = AuthRole
 
 export type User = AuthUser
 
-type AuthContextValue = {
+export type AuthContextValue = {
   user: User | null
   role: Role | null
   token: string | null
@@ -30,7 +30,7 @@ type AuthContextValue = {
   init: () => void
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 const TOKEN_STORAGE_KEY = 'token'
 

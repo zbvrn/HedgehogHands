@@ -109,8 +109,8 @@ export class AnnouncementsService {
       }
 
       if (search) {
-        qb.andWhere('(a.title ILIKE :q OR a.description ILIKE :q)', {
-          q: `%${search}%`,
+        qb.andWhere('(LOWER(a.title) LIKE :q OR LOWER(a.description) LIKE :q)', {
+          q: `%${search.toLowerCase()}%`,
         });
       }
 

@@ -136,6 +136,7 @@ function MyAnnouncementsPage() {
         render: (_, record) => (
           <Space>
             <Button
+              data-testid={`edit-announcement-${record.id}`}
               onClick={() => {
                 setEditing(record)
                 form.setFieldsValue({
@@ -158,6 +159,7 @@ function MyAnnouncementsPage() {
               disabled={updateMutation.isPending}
             />
             <Button
+              data-testid={`delete-announcement-${record.id}`}
               danger
               loading={deleteMutation.isPending}
               onClick={() => {
@@ -197,6 +199,7 @@ function MyAnnouncementsPage() {
           Мои объявления
         </Typography.Title>
         <Button
+          data-testid="create-announcement"
           type="primary"
           onClick={() => {
             setEditing(null)
@@ -235,6 +238,7 @@ function MyAnnouncementsPage() {
       ) : null}
 
       <Modal
+        data-testid="announcement-modal"
         centered
         open={isModalOpen}
         title={editing ? 'Редактирование объявления' : 'Новое объявление'}

@@ -1,5 +1,4 @@
 import {
-  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -92,7 +91,9 @@ export class ChildrenService {
         );
       }
       if (child.parentId !== parentId) {
-        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+        throw new NotFoundException(
+          problem(HttpStatus.NOT_FOUND, 'Child not found'),
+        );
       }
       return ChildrenMapper.toResponse(child);
     } catch (error) {
@@ -118,7 +119,9 @@ export class ChildrenService {
         );
       }
       if (child.parentId !== parentId) {
-        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+        throw new NotFoundException(
+          problem(HttpStatus.NOT_FOUND, 'Child not found'),
+        );
       }
 
       if (dto.name !== undefined) child.name = dto.name.trim();
@@ -146,7 +149,9 @@ export class ChildrenService {
         );
       }
       if (child.parentId !== parentId) {
-        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+        throw new NotFoundException(
+          problem(HttpStatus.NOT_FOUND, 'Child not found'),
+        );
       }
       await this.childrenRepository.delete({ id });
       return { ok: true };

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -76,8 +77,8 @@ export class CategoriesService {
 
       const exists = await this.categoriesRepository.findOne({ where: { name } });
       if (exists) {
-        throw new BadRequestException(
-          problem(HttpStatus.BAD_REQUEST, 'Category name must be unique'),
+        throw new ConflictException(
+          problem(HttpStatus.CONFLICT, 'Category name must be unique'),
         );
       }
 
@@ -112,8 +113,8 @@ export class CategoriesService {
 
       const exists = await this.categoriesRepository.findOne({ where: { name } });
       if (exists && exists.id !== id) {
-        throw new BadRequestException(
-          problem(HttpStatus.BAD_REQUEST, 'Category name must be unique'),
+        throw new ConflictException(
+          problem(HttpStatus.CONFLICT, 'Category name must be unique'),
         );
       }
 

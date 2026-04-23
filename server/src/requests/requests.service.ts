@@ -82,7 +82,9 @@ export class RequestsService {
         );
       }
       if (announcement.helperId === parentId) {
-        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+        throw new BadRequestException(
+          problem(HttpStatus.BAD_REQUEST, 'Cannot create request on own announcement'),
+        );
       }
 
       const exists = await this.requestsRepository.findOne({
@@ -219,7 +221,7 @@ export class RequestsService {
 
       const role = requester.role.trim().toLowerCase();
       if (role === UserRole.PARENT && request.parentId !== requester.userId) {
-        throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
+        throw new NotFoundException(problem(HttpStatus.NOT_FOUND, 'Request not found'));
       }
       if (role === UserRole.HELPER && request.announcement.helperId !== requester.userId) {
         throw new ForbiddenException(problem(HttpStatus.FORBIDDEN, 'Forbidden'));
@@ -334,8 +336,14 @@ export class RequestsService {
         );
       }
 
+      if (!reason) {
+        throw new BadRequestException(
+          problem(HttpStatus.BAD_REQUEST, 'Rejection reason is required'),
+        );
+      }
+
       request.status = RequestStatus.REJECTED;
-      request.rejectionReason = reason || null;
+      request.rejectionReason = reason;
       await this.requestsRepository.save(request);
 
       return RequestsMapper.toResponse(request);

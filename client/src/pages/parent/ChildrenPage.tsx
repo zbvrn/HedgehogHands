@@ -92,6 +92,7 @@ function ChildrenPage() {
         render: (_, record) => (
           <Space>
             <Button
+              data-testid={`edit-child-${record.id}`}
               onClick={() => {
                 setEditing(record)
                 form.setFieldsValue({
@@ -105,6 +106,7 @@ function ChildrenPage() {
               Редактировать
             </Button>
             <Button
+              data-testid={`delete-child-${record.id}`}
               danger
               loading={deleteMutation.isPending}
               onClick={() => {
@@ -147,6 +149,7 @@ function ChildrenPage() {
           Дети
         </Typography.Title>
         <Button
+          data-testid="add-child"
           type="primary"
           onClick={() => {
             setEditing(null)
@@ -173,6 +176,7 @@ function ChildrenPage() {
       </div>
 
       <Modal
+        data-testid="child-modal"
         centered
         open={isModalOpen}
         title={editing ? 'Редактирование ребёнка' : 'Новый ребёнок'}
