@@ -1,28 +1,41 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import AppLayout from './components/AppLayout'
 import ForbiddenPage from './components/ForbiddenPage'
+import PageLoading from './components/PageLoading'
 import PageNotFound from './components/PageNotFound'
 import RequireAuth from './components/RequireAuth'
 import RequireRole from './components/RequireRole'
+import { useAuth } from './context/AuthContext'
+import CategoriesPage from './pages/admin/CategoriesPage'
 import HelpersPage from './pages/admin/HelpersPage'
 import ParentsPage from './pages/admin/ParentsPage'
-import CategoriesPage from './pages/admin/CategoriesPage'
-import NewRequestsPage from './pages/helper/NewRequestsPage'
-import InProgressRequestsPage from './pages/helper/InProgressRequestsPage'
-import ResolvedRequestsPage from './pages/helper/ResolvedRequestsPage'
-import MyAnnouncementsPage from './pages/helper/MyAnnouncementsPage'
 import RequestDetailPage from './pages/RequestDetailPage'
-import CreateTicketPage from './pages/parent/CreateTicketPage'
-import TicketsListPage from './pages/parent/TicketsListPage'
+import InProgressRequestsPage from './pages/helper/InProgressRequestsPage'
+import MyAnnouncementsPage from './pages/helper/MyAnnouncementsPage'
+import NewRequestsPage from './pages/helper/NewRequestsPage'
+import ResolvedRequestsPage from './pages/helper/ResolvedRequestsPage'
 import ChildrenPage from './pages/parent/ChildrenPage'
 import ParentRequestsPage from './pages/parent/RequestsPage'
 import SearchPage from './pages/parent/SearchPage'
 import LoginPage from './pages/public/LoginPage'
 import RegisterPage from './pages/public/RegisterPage'
-import TicketDetailPage from './pages/TicketDetailPage'
 
-function HomePage() {
-  return <div style={{ padding: 24 }} />
+const roleHomeRoutes = {
+  parent: '/parent/children',
+  helper: '/helper/announcements',
+  admin: '/admin/parents',
+} as const
+
+function HomePageRedirect() {
+  const { role, isAuthReady } = useAuth()
+
+  if (!isAuthReady) {
+    return <PageLoading />
+  }
+
+  const target = role ? roleHomeRoutes[role] : '/forbidden'
+
+  return <Navigate to={target} replace />
 }
 
 function App() {
@@ -33,18 +46,15 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
 
         <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
-          <Route index element={<HomePage />} />
+          <Route index element={<HomePageRedirect />} />
 
           <Route element={<RequireRole allowedRoles={['parent']}><Outlet /></RequireRole>}>
             <Route path="/parent/children" element={<ChildrenPage />} />
             <Route path="/parent/search" element={<SearchPage />} />
             <Route path="/parent/requests" element={<ParentRequestsPage />} />
-            <Route path="/tickets" element={<TicketsListPage />} />
-            <Route path="/tickets/new" element={<CreateTicketPage />} />
           </Route>
 
           <Route element={<RequireRole allowedRoles={['parent', 'helper']}><Outlet /></RequireRole>}>
-            <Route path="/tickets/:id" element={<TicketDetailPage />} />
             <Route path="/requests/:id" element={<RequestDetailPage />} />
           </Route>
 

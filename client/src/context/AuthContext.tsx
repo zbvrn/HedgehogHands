@@ -1,4 +1,4 @@
-﻿import React, {
+import React, {
   createContext,
   useCallback,
   useContext,
@@ -24,6 +24,7 @@ export type AuthContextValue = {
   role: Role | null
   token: string | null
   isAuthenticated: boolean
+  isAuthReady: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string, role: RegisterRole) => Promise<void>
   logout: () => void
@@ -44,11 +45,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   })
   const [user, setUser] = useState<User | null>(null)
   const [role, setRole] = useState<Role | null>(null)
+  const [isAuthReady, setIsAuthReady] = useState<boolean>(() => !token)
 
   const setSession = useCallback((nextToken: string, nextUser: User) => {
     setToken(nextToken)
     setUser(nextUser)
     setRole(nextUser.role)
+    setIsAuthReady(true)
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(TOKEN_STORAGE_KEY, nextToken)
@@ -77,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null)
     setUser(null)
     setRole(null)
+    setIsAuthReady(true)
 
     if (typeof window !== 'undefined') {
       localStorage.removeItem(TOKEN_STORAGE_KEY)
@@ -85,13 +89,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const init = useCallback(() => {
     if (!token) {
+      setIsAuthReady(true)
       return
     }
+
+    setIsAuthReady(false)
 
     meRequest(token)
       .then((currentUser) => {
         setUser(currentUser)
         setRole(currentUser.role)
+        setIsAuthReady(true)
       })
       .catch(() => {
         logout()
@@ -108,17 +116,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role,
       token,
       isAuthenticated: Boolean(token),
+      isAuthReady,
       login,
       register,
       logout,
       init,
     }),
-    [user, role, token, login, register, logout, init],
+    [user, role, token, isAuthReady, login, register, logout, init],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
-
 
 export function useAuth() {
   const context = useContext(AuthContext)

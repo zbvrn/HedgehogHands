@@ -46,6 +46,7 @@ export function createAuthValue(overrides: Partial<AuthContextValue> = {}): Auth
     role,
     token,
     isAuthenticated: Boolean(token),
+    isAuthReady: true,
     login: async () => undefined,
     register: async () => undefined,
     logout: () => undefined,

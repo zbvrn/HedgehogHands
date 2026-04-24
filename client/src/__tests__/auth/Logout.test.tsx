@@ -19,6 +19,7 @@ function AuthHarness() {
     role: token ? 'parent' : null,
     token,
     isAuthenticated: Boolean(token),
+    isAuthReady: true,
     login: async () => undefined,
     register: async () => undefined,
     logout: () => {
