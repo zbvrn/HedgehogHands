@@ -2,7 +2,7 @@ import request from 'supertest';
 import { User } from '../../src/users/user.entity';
 
 export class TestAuthHelper {
-  constructor(private readonly httpServer: unknown) {}
+  constructor(private readonly httpServer: Parameters<typeof request>[0]) {}
 
   async login(user: User, password = 'Password123!'): Promise<string> {
     const response = await request(this.httpServer)

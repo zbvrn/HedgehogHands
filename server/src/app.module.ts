@@ -1,4 +1,3 @@
-// Главный модуль
 
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -12,9 +11,8 @@ import { ChildrenModule } from './children/children.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { RequestsModule } from './requests/requests.module';
 
-// Декоратор Module
+
 @Module({
-  // какие модули подключаем
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
@@ -43,11 +41,8 @@ import { RequestsModule } from './requests/requests.module';
     AnnouncementsModule,
     RequestsModule,
   ],
-  // какие контроллеры используем
   controllers: [AppController],
-  // какие сервисы используем
   providers: [AppService],
 })
 
-// Делает класс доступным для импорта в других файлах
 export class AppModule {}

@@ -13,6 +13,12 @@ type UserSeed = {
   password?: string;
 };
 
+type SeedUserParams = {
+  email: string;
+  name: string;
+  password?: string;
+};
+
 export class TestDataSeeder {
   private readonly users: Repository<User>;
   private readonly categories: Repository<Category>;
@@ -132,7 +138,7 @@ export class TestDataSeeder {
     });
   }
 
-  private async seedUser(role: UserRole, params: Required<UserSeed>) {
+  private async seedUser(role: UserRole, params: SeedUserParams) {
     const passwordHash = await bcrypt.hash(params.password ?? 'Password123!', 4);
     return this.users.save(
       this.users.create({

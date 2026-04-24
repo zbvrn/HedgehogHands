@@ -33,7 +33,7 @@ function SearchPage() {
   const queryClient = useQueryClient()
   const { token } = useAuth()
   const [page, setPage] = useState(1)
-  const limit = 10
+  const limit = 3
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebouncedValue(search.trim(), 350)
